@@ -1,0 +1,12 @@
+scikit-learn
+requests
+streamlit
+langchain
+matplotlib
+openai
+tiktoken
+numpy
+doctran
+chromadb
+rank_bm25
+streamlit_chat
