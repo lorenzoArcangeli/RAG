@@ -11,3 +11,4 @@ chromadb
 rank_bm25
 streamlit_chat
 python-dotenv
+langchain-openai

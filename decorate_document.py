@@ -1,6 +1,5 @@
-from embedder import Embedder
 from langchain_core.prompts import ChatPromptTemplate
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from langchain_community.document_transformers import DoctranQATransformer
 import os
 from langchain_core.documents import Document

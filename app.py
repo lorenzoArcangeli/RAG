@@ -34,9 +34,9 @@ def test_get_content_page(page_title):
     docs=page_json['query']['pages'][0]['revisions'][0]['slots']['main']['content']
     document_chunks_class=chunker.get_document_chunks([Document(page_content=docs)], page_title)
     st.write(document_chunks_class)
-    database_connection.add_elements_to_collection(document_chunks_class, embedder)
-    database_elements=database_connection.get_all_documents()
-    st.write(database_elements)
+    #database_connection.add_elements_to_collection(document_chunks_class, embedder)
+    #database_elements=database_connection.get_all_documents()
+    #st.write(database_elements)
 
 
 def remove_elements():

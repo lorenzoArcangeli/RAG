@@ -1,6 +1,6 @@
 
 import os
-from langchain.embeddings import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from dotenv import load_dotenv
 
 
@@ -10,7 +10,6 @@ class Embedder:
         load_dotenv()
         os.environ['OPENAI_API_KEY'] = os.getenv("OPEN_AOI_KEY")
         self.__oaiembeds = OpenAIEmbeddings(model="text-embedding-ada-002")
-
 
     def do_embedding(self, sentences):
         embeddings = self.__oaiembeds.embed_documents([x['combined_sentence'] for x in sentences])

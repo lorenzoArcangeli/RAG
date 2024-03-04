@@ -1,18 +1,9 @@
 import streamlit as st
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.text_splitter import CharacterTextSplitter
 from langchain.schema import Document
-from langchain.embeddings import OpenAIEmbeddings
-import os
 from sklearn.metrics.pairwise import cosine_similarity
-import matplotlib.pyplot as plt
 import numpy as np
-from langchain_core.prompts import ChatPromptTemplate
-from langchain.chat_models import ChatOpenAI
-import json
-from embedder import Embedder
 from decorate_document import Document_decorator
-from database_connection import Database_connector
 import streamlit as st
 
 class Chunker:
