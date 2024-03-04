@@ -135,6 +135,12 @@ class Database_connector:
     def get_all_documents(self):
         #by default it returns only documents and ids, I added the embeddings 
         return self.__collection.get(include=['embeddings', 'documents'])
+    
+    def remove_elements(self):
+        numeri = [str(numero) for numero in range(17, 35)]
+        self.__collection.delete(
+            ids=numeri
+        )
 
     '''
     where_clause = {

@@ -1,0 +1,15 @@
+Gestionale
+Base
+Amministrazione
+Accise --> non ho capito perchè ma con questo se rompe tutto
+BPM
+Conferimenti
+IWine
+Mobile
+Progetti
+Produzione
+ESSENZIA_WS
+Documenti_Ext
+Wine
+Essenzia8
+Essenzia11

@@ -13,6 +13,7 @@ import json
 from embedder import Embedder
 from decorate_document import Document_decorator
 from database_connection import Database_connector
+import streamlit as st
 
 class Chunker:
     
@@ -27,9 +28,16 @@ class Chunker:
     def get_document_chunks(self, document, page_title):
         self.keyword=self.__document_decorator.get_page_keyword(document)
         sentences=self.__create_document_chunks(document)
-        distances, sentences = self.__calculate_cosine_distances(sentences)
-        indexes_above_treshold_distance=self.__identify_indexes_above_treshold_distance(distances)
-        document_chunks=self.__group_chunks(indexes_above_treshold_distance, sentences)
+        # if there is only one chunk in the document
+        if len(sentences)<=1:
+            sentences[0]['combined_sentence']=sentences[0]['sentence']
+            st.write(sentences)
+            document_chunks=sentences
+            st.write(document_chunks)
+        else: 
+            distances, sentences = self.__calculate_cosine_distances(sentences)
+            indexes_above_treshold_distance=self.__identify_indexes_above_treshold_distance(distances)
+            document_chunks=self.__group_chunks(indexes_above_treshold_distance, sentences)
         #PER QUESTO CI VUOLE L'ACCOUNT A PAGAMENTO
         #document_chunks.append(self.__document_decorator.get_page_summary(document, page_title))
         document_chunks=self.__document_decorator.add_autoincrement_value(document_chunks, self.vector_amount_in_db)
