@@ -54,6 +54,7 @@ def test_get_answers_questions(page_title):
     chunker=Chunker(vector_amount_in_db, embedder)
     docs=page_json['query']['pages'][0]['revisions'][0]['slots']['main']['content']
     document_aq_class=chunker.get_answers_questions_test([Document(page_content=docs)])
+    st.write("-------------APP----")
     st.write(document_aq_class)
 
 def remove_elements():

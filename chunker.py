@@ -32,7 +32,7 @@ class Chunker:
         #PER QUESTO CI VUOLE L'ACCOUNT A PAGAMENTO
         #document_chunks.append(self.__document_decorator.get_page_summary(document, page_title))
         #document_chunks.extend(self.get_answers_questions(document))
-        #document_chunks=self.__document_decorator.add_autoincrement_value(document_chunks, self.vector_amount_in_db)
+        document_chunks=self.__document_decorator.add_autoincrement_value(document_chunks, self.vector_amount_in_db)
         document_chunks=self.__document_decorator.remove_index_and_simple_sentece_from_senteces(document_chunks)
         return document_chunks
 
@@ -43,7 +43,7 @@ class Chunker:
         distances, sentences = self.__calculate_cosine_distances(sentences)
         indexes_above_treshold_distance=self.__identify_indexes_above_treshold_distance(distances)
         document_chunks=self.__group_chunks(indexes_above_treshold_distance, sentences)
-        st.write(document_chunks)
+        #st.write(document_chunks)
         return self.__document_decorator.extract_questions_anwers_from_document(document_chunks)
 
     def __create_document_chunks(self, document):

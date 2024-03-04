@@ -1,5 +1,6 @@
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_openai import ChatOpenAI
+#from langchain_openai import ChatOpenAI 
+from langchain.chat_models import ChatOpenAI # questo è deprecato
 from langchain_community.document_transformers import DoctranQATransformer
 import os
 from langchain_core.documents import Document
@@ -98,13 +99,18 @@ class Document_decorator:
             questions_answers_splitted=self.__split_question_anwer([Document(page_content=question_answers)])
             questions_answers_splitted_list_dict=[]
             for qas in questions_answers_splitted:
-                qasd={'combined_sentence': qas}
-                qasd={'sentence': qas}
-                qasd_emb=self.__embedder.do_embedding([qas])
+                qasd={}
+                qasd['combined_sentence']=qas
+                qasd['sentence']=qasd['combined_sentence']
+                qasd_emb=self.__embedder.embed_query(qas)
                 qasd['combined_sentence_embedding']=qasd_emb
+                qasd['index']=0
                 questions_answers_splitted_list_dict.append(qasd)
+                #st.write("SINGLE CHUNK")
+                #st.write(questions_answers_splitted_list_dict)
             questions_answars.extend(questions_answers_splitted_list_dict)
-            st.write(questions_answars)
+            #st.write("END OF ANSEERS QUESTIONS")
+            #st.write(questions_answars)
         return questions_answars
     
     def __split_question_anwer(self, answers_questions_document):

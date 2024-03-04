@@ -1,6 +1,7 @@
 
 import os
-from langchain_openai import OpenAIEmbeddings
+from langchain.embeddings import OpenAIEmbeddings # ma è deprecato
+#from langchain_openai import OpenAIEmbeddings
 from dotenv import load_dotenv
 
 
