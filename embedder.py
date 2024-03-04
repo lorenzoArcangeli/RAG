@@ -14,7 +14,7 @@ class Embedder:
     def do_embedding(self, sentences):
         embeddings = self.__oaiembeds.embed_documents([x['combined_sentence'] for x in sentences])
         return embeddings
-
+    
     def get_embedding_funciont(self):
         return self.__oaiembeds
 

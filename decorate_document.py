@@ -95,7 +95,15 @@ class Document_decorator:
             document_from_sentence=[Document(page_content=sentence['combined_sentence'])]
             interrogated_document=qa_transformer.transform_documents(document_from_sentence)
             question_answers=json.dumps(interrogated_document[0].metadata, indent=2)
-            questions_answars.extend(self.__split_question_anwer([Document(page_content=question_answers)]))
+            questions_answers_splitted=self.__split_question_anwer([Document(page_content=question_answers)])
+            questions_answers_splitted_list_dict=[]
+            for qas in questions_answers_splitted:
+                qasd={'combined_sentence': qas}
+                qasd={'sentence': qas}
+                qasd_emb=self.__embedder.do_embedding([qas])
+                qasd['combined_sentence_embedding']=qasd_emb
+                questions_answers_splitted_list_dict.append(qasd)
+            questions_answars.extend(questions_answers_splitted_list_dict)
             st.write(questions_answars)
         return questions_answars
     
