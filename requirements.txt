@@ -12,3 +12,7 @@ rank_bm25
 streamlit_chat
 python-dotenv
 langchain-openai
+sentence_transformers
+tenacity
+pandas
+tiktoken

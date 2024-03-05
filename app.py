@@ -7,6 +7,19 @@ import os
 import streamlit as st
 from chunker import Chunker
 from langchain_core.documents import Document
+from scoreRetriever import ScoreRetriever
+from math import exp
+import openai
+import os
+import pandas as pd
+from tenacity import retry, wait_random_exponential, stop_after_attempt
+import tiktoken
+from dotenv import load_dotenv
+import streamlit as st
+from langchain.chat_models import ChatOpenAI
+from sentence_transformers import CrossEncoder
+
+
 
 
 def test_chat_class():
@@ -15,6 +28,7 @@ def test_chat_class():
     embedder= Embedder()
     database_connection.get_or_create_collection("RAG", embedder)
     database=database_connection.get_db()
+    #chat=Chat(database_connection)
     chat=Chat(database)
     chat.chat()
 
@@ -71,12 +85,62 @@ def get_all_elements():
     database_connection.connect()
     embedder= Embedder()
     database_connection.get_or_create_collection("RAG", embedder)
-    database_elements=database_connection.get_all_documents()
+
+    llm = ChatOpenAI(
+            temperature=0,
+            max_tokens=800,
+            model_kwargs={"top_p": 0, "frequency_penalty": 0, "presence_penalty": 0},
+        )
+
+    #print(type(database_connection.get_db()))
+    #print(type(database_connection.get_collection()))
+    #print(type(llm))
+
+    #CrossEncoderWrapper()
+    scoreRetriver=ScoreRetriever(database_connection=database_connection, llm=llm)
+    chat=Chat(scoreRetriver)
+    chat.chat()
+    '''
+    database_elements=database_connection.get_all_documents_only()
+    documents_from_db=database_elements['documents']
+    first_ten_element=documents_from_db[:10]
+
+    
+    load_dotenv()
+    os.environ['OPENAI_API_KEY'] = os.getenv("OPEN_AOI_KEY")
+    client=openai.OpenAI()
+    tokens = [" Yes", " No"]
+    tokenizer = tiktoken.encoding_for_model("gpt-3.5-turbo")
+    ids = [tokenizer.encode(token) for token in tokens]
+    scoreRetriver=ScoreRetriever(client=client, tokenizer=tokenizer, tokens=tokens, ids=ids)
+    result=scoreRetriver.get_relevance_for_all_documents(first_ten_element, "tabelle gestionali")
+    st.write(result)
+
     st.write(database_elements)
+    st.write(type(database_elements['documents']))
+    #st.write("Prima del ciclo")
+    for database_document in database_elements['documents']:
+        print(database_document)
+    #    print_test(database_document)
+        #st.write(type(database_document))
+        #st.write(database_document)
+    '''
+
+def test_score_retriever():
+    
+    load_dotenv()
+    os.environ['OPENAI_API_KEY'] = os.getenv("OPEN_AOI_KEY")
+    client=openai.OpenAI()
+    tokens = [" Yes", " No"]
+    tokenizer = tiktoken.encoding_for_model("gpt-3.5-turbo")
+    ids = [tokenizer.encode(token) for token in tokens]
+    scoreRetriver=ScoreRetriever(client=client, tokenizer=tokenizer, tokens=tokens, ids=ids)
+    scoreRetriver.get_ids()
 
 if __name__ == '__main__':
-    test_get_answers_questions("Gestionale")
-    #get_all_elements()
+    #test_score_retriever()
+    #test_get_answers_questions("Gestionale")
+    get_all_elements()
     
     
     #    remove_elements()

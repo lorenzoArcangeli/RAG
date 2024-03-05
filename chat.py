@@ -23,9 +23,13 @@ class Chat:
     def __get_conversational_chain(self, database):
         st.session_state.conversation=database
         llm = ChatOpenAI()
+        #retrieved_documents=database.get_documents_by_semantic_search()
+        #st.write("retrieved documents")
+        #st.write(retrieved_documents)
         conversation_chain = ConversationalRetrievalChain.from_llm(
             llm=llm,
-            retriever=database.as_retriever(),
+            #retriever=database.as_retriever(),
+            retriever=database
         )
         return conversation_chain
 
