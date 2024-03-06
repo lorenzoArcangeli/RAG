@@ -106,11 +106,15 @@ class Database_connector:
     
     def get_db(self):
         return self.__db
+    
+    def get_collection(self):
+        return self.__collection
 
-    def get_documents_by_semantic_search(self, embedded_query):
+    def get_documents_by_semantic_search(self, text_query):
         semantic_result=self.__collection.query(
-            query_embeddings=embedded_query,
-            n_results=10
+            query_texts=text_query,
+            n_results=10,
+            include=['documents','embedding']
         )
         # list of document
         return semantic_result
@@ -135,6 +139,9 @@ class Database_connector:
     def get_all_documents(self):
         #by default it returns only documents and ids, I added the embeddings 
         return self.__collection.get(include=['embeddings', 'documents'])
+    
+    def get_all_documents_only(self):
+        return self.__collection.get(include=['documents'])
     
     def remove_elements(self):
         numeri = [str(numero) for numero in range(17, 35)]

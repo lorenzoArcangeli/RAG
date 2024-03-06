@@ -65,7 +65,7 @@ class Document_decorator:
                         """
                         Sei l'amministratore di un documento in cui sono presenti elementi che che parlano di un argomento simile.
                         Genera delle parole chiavi che identificano di cosa si tratta all'interno del documento.
-                        Genera il numero di parole chiavi che riteni opportune per identificare gli elementi chiave del documento.
+                        Genera massimo 8 parole chiavi.
 
                         Delle buone parole chiavi riescono a far capire agli osservatori di cosa parla il documento.
 
