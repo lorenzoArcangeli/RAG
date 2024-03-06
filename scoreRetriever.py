@@ -57,8 +57,11 @@ class ScoreRetriever(BaseRetriever, BaseModel):
         #CROSS ENCODER RE-RANKING
         reranked_docs=self.__cross_encoder_re_ranking(unique_contents, query)
 
+        '''
         #Lost in the middle problem
         reordered_docs=self.__lost_in_middle_problem(reranked_docs)
+        '''
+        reordered_docs=reranked_docs[:4]
         st.write(reordered_docs)
         return reordered_docs
         
@@ -79,7 +82,8 @@ class ScoreRetriever(BaseRetriever, BaseModel):
         st.write(costEstimator.calculate_cost(token))
         documents = [Document(page_content=combined_text) for combined_text in reordered_docs]
         #MESSO SOLO PER LIMITARE IL COSTO
-        documents=documents[:6]
+        #DEVE ESSERE UGUALE AL MUMERO DI DOCUMENTI RESTITUITI DAL BM25
+        documents=documents[:4]
         return documents
 
     def __cross_encoder_re_ranking(self, unique_contents, query):
@@ -98,6 +102,10 @@ class ScoreRetriever(BaseRetriever, BaseModel):
         reranked_docs = [doc for _, doc in sorted_docs][0:10]
         return reranked_docs
 
+
+    #def __setp_back_prompting(self, query):
+
+
     def __query_expansion(self, query):
         #output_parser = LineListOutputParser()
 
@@ -107,7 +115,7 @@ class ScoreRetriever(BaseRetriever, BaseModel):
             diverse versioni della domanda data dall'utente per recuperare i documenti pertinenti da un
             database vettoriale. Generando più prospettive sulla domanda dell'utente, il vostro obiettivo è quello di aiutare
             l'utente a superare alcune delle limitazioni della ricerca of the distance-based similarity
-            Fornisce queste domande alternative separate da newlines. Fornisce solo la query, nessuna numerazione.Insersci nella prima riga la domanda originale
+            Fornisce queste domande alternative separate da newlines. Fornisce solo la query, nessuna numerazione.Insersci nella prima riga la query originale che ricevi in input
             (solo la domanda originale, niente altro) senza separazione con la riga sottostante.
             Non aggiungere la doppia interruzione di riga. 
             Il template dell'output deve essere il seguente:
@@ -121,6 +129,7 @@ class ScoreRetriever(BaseRetriever, BaseModel):
         )
 
         llm_chain = LLMChain(llm=self.llm, prompt=QUERY_PROMPT)
+        st.write(query)
         queries = llm_chain.invoke(query)
         queries = queries.get("text")
         queries_splitted = queries.split("\n")
