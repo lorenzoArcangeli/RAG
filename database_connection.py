@@ -123,7 +123,8 @@ class Database_connector:
         )
         # list of document
         return keyword_result
-
+    
+    '''
     def __get_multiple_where_condition(self, keyword):
         or_clause = []
         # insert string ad dictinary in the list
@@ -131,6 +132,7 @@ class Database_connector:
             or_clause.append({"contains": parola})
         # final dictionary
         where_clause = {"$or": or_clause}
+    '''
 
     def get_all_documents(self):
         #by default it returns only documents and ids, I added the embeddings 

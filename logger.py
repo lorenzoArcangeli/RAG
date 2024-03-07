@@ -52,5 +52,5 @@ class Logger:
             response = self.__session.get(api_url, headers=headers)
             return response.json()
     
-    def set_new_baseurl(new_url):
+    def set_new_baseurl(self, new_url):
         self.baseurl=new_url

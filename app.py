@@ -74,7 +74,8 @@ def get_all_elements():
     st.write(database_elements)
 
 if __name__ == '__main__':
-    test_get_answers_questions("Gestionale")
+    #test_get_answers_questions("Gestionale")
+    test_chat_class()
     #get_all_elements()
     
     
