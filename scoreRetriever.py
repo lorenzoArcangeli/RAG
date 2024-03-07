@@ -141,6 +141,7 @@ class ScoreRetriever(BaseRetriever, BaseModel):
         st.write("documents retrieves")
         st.write(docs)
         
+        #TODO: MODIFICARE QUESTO
         unique_contents = set()
         unique_docs = []
         for sublist in docs:

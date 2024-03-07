@@ -3,6 +3,9 @@ import streamlit as st
 #from langchain_openai import ChatOpenAI 
 from langchain.chat_models import ChatOpenAI #questo è deprecato
 from langchain.chains import ConversationalRetrievalChain
+from langchain.memory import ConversationBufferWindowMemory
+
+
 
 class Chat:
 
@@ -26,11 +29,16 @@ class Chat:
         #retrieved_documents=database.get_documents_by_semantic_search()
         #st.write("retrieved documents")
         #st.write(retrieved_documents)
+        memory = ConversationBufferWindowMemory(
+            memory_key='chat_history', return_messages=True)
         conversation_chain = ConversationalRetrievalChain.from_llm(
             llm=llm,
             #retriever=database.as_retriever(),
-            retriever=database
+            retriever=database,
+            memory=memory
         )
+        st.write("conversational chain")
+        st.write(conversation_chain)
         return conversation_chain
 
     def __conversational_chat(self, query, chain):
