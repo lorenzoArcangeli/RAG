@@ -19,6 +19,9 @@ from database_connection import Database_connector
 from langchain.schema import Document
 
 from cost_estimator import costEsimator
+from queryTransformations import question_gen, query_expansion, join_query_transofrmed
+
+from langchain.load import dumps
 
 
 class LineList(BaseModel):
@@ -48,6 +51,7 @@ class ScoreRetriever(BaseRetriever, BaseModel):
     #questo glielo passso quando lo invoco mettendo attributo=attributo_passato
     database_connection: Database_connector # gli devo passare la collezione e il db
     llm: langchain.chat_models.openai.ChatOpenAI
+    cross_encoder:CrossEncoder
     #cross_encoder: sentence_transformers.cross_encoder
 
     def get_relevant_documents(self, query):
@@ -66,7 +70,7 @@ class ScoreRetriever(BaseRetriever, BaseModel):
         return reordered_docs
         
 
-    
+    '''
     def __lost_in_middle_problem(delf, reranked_docs):
         reordering = LongContextReorder()
         #questo è quello che devo passare all'llm
@@ -85,9 +89,9 @@ class ScoreRetriever(BaseRetriever, BaseModel):
         #DEVE ESSERE UGUALE AL MUMERO DI DOCUMENTI RESTITUITI DAL BM25
         documents=documents[:4]
         return documents
+    '''
 
     def __cross_encoder_re_ranking(self, unique_contents, query):
-        cross_encoder = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
         #zip query and documents and calculate de score
         pairs = []
         for doc in unique_contents:
@@ -95,7 +99,7 @@ class ScoreRetriever(BaseRetriever, BaseModel):
         st.write("pre predict")
         #st.write(CrossEncoderWrapper.get_encoder())
         #scores = CrossEncoderWrapper.get_encoder().predict(pairs)
-        scores=cross_encoder.predict(pairs)
+        scores=self.cross_encoder.predict(pairs)
         st.write("post predict")
         scored_docs = zip(scores, unique_contents)
         sorted_docs = sorted(scored_docs, reverse=True)
@@ -103,64 +107,62 @@ class ScoreRetriever(BaseRetriever, BaseModel):
         return reranked_docs
 
 
-    #def __setp_back_prompting(self, query):
-
-
     def __query_expansion(self, query):
         #output_parser = LineListOutputParser()
 
-        QUERY_PROMPT = PromptTemplate(
-            input_variables=["question"],
-            template="""Sei un AI language model assistant. Il tuo compito è quello di generare quattro
-            diverse versioni della domanda data dall'utente per recuperare i documenti pertinenti da un
-            database vettoriale. Generando più prospettive sulla domanda dell'utente, il vostro obiettivo è quello di aiutare
-            l'utente a superare alcune delle limitazioni della ricerca of the distance-based similarity
-            Fornisce queste domande alternative separate da newlines. Fornisce solo la query, nessuna numerazione.Insersci nella prima riga la query originale che ricevi in input
-            (solo la domanda originale, niente altro) senza separazione con la riga sottostante.
-            Non aggiungere la doppia interruzione di riga. 
-            Il template dell'output deve essere il seguente:
-            query originale
-            query 1
-            query 2
-            query 3
-            query 4
-            query 5
-            Domanda originale: {question}""",
-        )
+        query_espansion=query_expansion(query)
+        general_query=question_gen.invoke({"question": query})
+        query_espansion.append(general_query)
 
-        llm_chain = LLMChain(llm=self.llm, prompt=QUERY_PROMPT)
-        st.write(query)
-        queries = llm_chain.invoke(query)
-        queries = queries.get("text")
-        queries_splitted = queries.split("\n")
-        st.write(queries_splitted)
-        for query in queries_splitted:
+        st.write(query_espansion)
+        for query in query_espansion:
             st.write(query)
         #questa guardarla perchè force ce da cambiarla
-        docs = [self.get_documents_by_semantic_search(query) for query in queries_splitted]
+        results = [self.get_documents_by_semantic_search(query) for query in query_espansion]
         st.write("documents retrieves")
-        st.write(docs)
+        st.write(results)
         
-        #TODO: MODIFICARE QUESTO
+        #TODO: prima cambiare gli embeddings e poi cambiare questo
         unique_contents = set()
         unique_docs = []
-        for sublist in docs:
+        for sublist in results:
             for doc in sublist:
                 if doc.page_content not in unique_contents:
                     unique_docs.append(doc)
                     unique_contents.add(doc.page_content)
         unique_contents = list(unique_contents)
         return unique_contents
+        '''
+        k=60
+        fused_scores = {}
+        for docs in results:
+            # Assumes the docs are returned in sorted order of relevance
+            for rank, doc in enumerate(docs):
+                doc_str = dumps(doc)
+                if doc_str not in fused_scores:
+                    fused_scores[doc_str] = 0
+                fused_scores[doc_str] += 1 / (rank + k)
+
+        # Creare una lista di tuple (doc_str, score) dal dizionario
+        tuples_list = [(doc_str, score) for doc_str, score in fused_scores.items()]
+        st.write("tuple e score")
+        st.write(tuples_list)
+        # Ordinare la lista in base allo score in ordine inverso
+        sorted_list = sorted(tuples_list, key=lambda x: x[1], reverse=False)
+
+        # Creare una lista di stringhe ordinate in base allo score
+        ordered_strings = [doc_str for doc_str, score in sorted_list]
+        return ordered_strings
+        '''
         
-        
-    
+
 
     def get_documents_by_semantic_search(self, text_query):
         st.write("query")
         st.write(text_query)
         retriever = self.database_connection.get_retriever_by_semantic_search()
         result =retriever.get_relevant_documents(text_query)
-        result=result[:5]
+        result=result[:4]
         st.write("get_relevant_documents result")
         st.write(result)
         return result

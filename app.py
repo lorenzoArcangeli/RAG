@@ -21,6 +21,8 @@ from sentence_transformers import CrossEncoder
 from BM25_retriever import BM25_Retriever
 from langchain.retrievers import BM25Retriever
 from Hybrid_search import HybridSearch
+from langchain.chains import ConversationalRetrievalChain
+
 
 
 
@@ -176,10 +178,36 @@ def test_hybrid_search():
             max_tokens=800,
             model_kwargs={"top_p": 0, "frequency_penalty": 0, "presence_penalty": 0},
         )
-    scoreRetriver=ScoreRetriever(database_connection=database_connection, llm=llm)
+    cross_encoder = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
+    scoreRetriver=ScoreRetriever(database_connection=database_connection, llm=llm, cross_encoder=cross_encoder)
     hybrid_search=HybridSearch(BM25_retriever=bm25_retriever, scoreRetriever=scoreRetriver)
     chat=Chat(hybrid_search)
     chat.chat()
+
+def get_prompt():
+    database_connection=Database_connector("localhost", 8000)
+    database_connection.connect()
+    embedder= Embedder()
+    database_connection.get_or_create_collection("RAG", embedder)
+    documents=database_connection.get_all_documents()
+    sentences=documents['documents']
+    documents=[Document(page_content=sentence) for sentence in sentences]
+    bm25_retriever = BM25Retriever.from_documents(documents)
+    bm25_retriever.k =  4
+    llm = ChatOpenAI(
+            temperature=0,
+            max_tokens=800,
+            model_kwargs={"top_p": 0, "frequency_penalty": 0, "presence_penalty": 0},
+        )
+    scoreRetriver=ScoreRetriever(database_connection=database_connection, llm=llm)
+    hybrid_search=HybridSearch(BM25_retriever=bm25_retriever, scoreRetriever=scoreRetriver)
+    conversation_chain = ConversationalRetrievalChain.from_llm(
+            llm=llm,
+            #retriever=database.as_retriever(),
+            retriever=hybrid_search,
+            #memory=self.memory
+        )
+    #st.write(conversation_chain.prompt.template)
 
 if __name__ == '__main__':
     #test_score_retriever()
@@ -188,6 +216,9 @@ if __name__ == '__main__':
     #test_bm25()
     test_hybrid_search()
     
+    #get_prompt()
+
+
     #    remove_elements()
 
 
