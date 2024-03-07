@@ -21,8 +21,7 @@ from sentence_transformers import CrossEncoder
 from BM25_retriever import BM25_Retriever
 from langchain.retrievers import BM25Retriever
 from Hybrid_search import HybridSearch
-
-
+from queryTransformation import question_gen, query_expansion, join_query_transofrmed
 
 def test_chat_class():
     database_connection=Database_connector("localhost", 8000)
@@ -181,13 +180,25 @@ def test_hybrid_search():
     chat=Chat(hybrid_search)
     chat.chat()
 
+def test_query_transformation():
+    embedder= Embedder()
+ 
+    query_espansion=query_expansion("Essenzia 8")
+    general_query=question_gen.invoke({"question": "Essenzia 8"})
+    query_espansion.insert(0, general_query)
+    st.write(query_espansion)
+
+
 if __name__ == '__main__':
     #test_score_retriever()
     #test_get_answers_questions("Gestionale")
     #get_all_elements()
     #test_bm25()
     test_hybrid_search()
-    
+    #test_query_transformation()
+
+
+
     #    remove_elements()
 
 

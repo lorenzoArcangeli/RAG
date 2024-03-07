@@ -3,6 +3,8 @@ import streamlit as st
 #from langchain_openai import ChatOpenAI 
 from langchain.chat_models import ChatOpenAI #questo è deprecato
 from langchain.chains import ConversationalRetrievalChain
+from queryTransformation import question_gen, query_expansion, join_query_transofrmed
+from langchain.memory import ConversationBufferWindowMemory
 
 class Chat:
 
@@ -22,14 +24,18 @@ class Chat:
 
     def __get_conversational_chain(self, database):
         st.session_state.conversation=database
-        llm = ChatOpenAI()
+        llm = ChatOpenAI(temperature=0.2)
         #retrieved_documents=database.get_documents_by_semantic_search()
         #st.write("retrieved documents")
         #st.write(retrieved_documents)
         conversation_chain = ConversationalRetrievalChain.from_llm(
             llm=llm,
             #retriever=database.as_retriever(),
-            retriever=database
+            retriever=database,
+            #NELLA TESI SCRIVERE CHE C'ERA QUASTO PROBLEMA
+            #rephrase_question=False
+            #dai grafici si vede che 6 generalemente è il migliore in base al numero di token
+            #memory=ConversationBufferWindowMemory(k=6)
         )
         return conversation_chain
 
@@ -37,6 +43,14 @@ class Chat:
         result = chain({"question": query, "chat_history": st.session_state['history']})
         st.session_state['history'].append((query, result["answer"]))
         return result["answer"]
+    
+    def __get_complete_query(self, query):
+        query_espansion=query_expansion(query)
+        general_query=question_gen.invoke({"question": query})
+        query_espansion.append(general_query)
+        qt_string=join_query_transofrmed(query_espansion)
+        return qt_string
+        #return query
 
     def chat(self):
         # User input form
@@ -45,6 +59,11 @@ class Chat:
                 user_input = st.text_input("Query:", placeholder="Chiedi quello che vuoi ai documenti APRA", key='input')
                 submit_button = st.form_submit_button(label='Send')
             if submit_button and user_input:
+                st.write("user input")
+                st.write(user_input)
+                #complete_query=self.__get_complete_query(user_input)
+                #st.write("complete query")
+                #st.write(complete_query)
                 output = self.__conversational_chat(user_input, self.__chain)
                 st.session_state['past'].append(user_input)
                 st.session_state['generated'].append(output)

@@ -15,7 +15,7 @@ class HybridSearch(BaseRetriever, BaseModel):
 
     def get_relevant_documents(self, query):
         reordering = LongContextReorder()
-        ensemble_retriever = EnsembleRetriever(retrievers=[self.BM25_retriever, self.scoreRetriever],weights=[0.4, 0.6])
+        ensemble_retriever = EnsembleRetriever(retrievers=[self.BM25_retriever, self.scoreRetriever],weights=[0.2, 0.8])
         docs = ensemble_retriever.get_relevant_documents(query)
         reordered_docs = reordering.transform_documents(docs)
         #st.write("final docs")

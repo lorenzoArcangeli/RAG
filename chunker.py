@@ -136,9 +136,10 @@ class Chunker:
         # grouped_sentences now contains the chunked sentences
         return chunks
     
+    #ATTENZIONE QUA HO CAMBIATO, INVECE DI MAGGIORE DI 2000 HO MESSO DI 1024, QUANDO RIFACCIO GLI EMBEDDING TENERLO IN CONSIDERAZIONE
     def __check_len(self, document):
         #chek if amiunt of token id above the limit
-        if len(document[0].page_content)*0.75>2000:
+        if len(document[0].page_content)*0.75>1024:
             #create chunks
             text_splitter=RecursiveCharacterTextSplitter(
                 chunk_size=1024, chunk_overlap=50
