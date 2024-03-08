@@ -7,6 +7,7 @@ import json
 import streamlit as st
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
+import uuid
 
 class Document_decorator:
 
@@ -14,6 +15,15 @@ class Document_decorator:
         self.__embedder=embedder
         self.__llm=ChatOpenAI(model="gpt-3.5-turbo")
     
+    #per metadata si intende uuid, sha1 e tipo (web/pdf)
+    def add_metadata(self, sentences, type, sha1):
+        for sentence in sentences:
+            sentence['type']=type
+            new_uuid=uuid.uuid4()
+            sentence['uuid']=str(new_uuid)
+            sentence['sha1']=str(sha1)
+        return sentences
+
     def get_page_summary(self, document, page_title):
         #get the summary for the entire page
         PROMPT = ChatPromptTemplate.from_messages(

@@ -92,14 +92,47 @@ def add_pages(page_title):
     database_connection.add_elements_to_collection(chunks)
     st.write(database_connection.get_all_documents())
 
+def add_pages_with_metadata(page_title):
+    load_dotenv()
+    logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
+    logger.login()
+    database_connection=Database_connector("localhost", 8000)
+    database_connection.connect()
+    embedder= Embedder()
+    database_connection.get_or_create_collection("RAG", embedder)
+    page_json=logger.test_json(page_title)  
+    vector_amount_in_db=database_connection.get_vector_amount_in_db()
+    st.write(vector_amount_in_db)
+    chunker=Chunker(vector_amount_in_db, embedder)
+    last_version=get_last_version(page_json)
+    chunks=chunker.get_document_chunks([Document(page_content=last_version['slots']['main']['content'])], page_title, last_version['sha1'])
+    st.write(chunks)
+
+
+def get_last_version(json):
+    versions=json['query']['pages'][0]['revisions']
+    last_version=versions[-1]
+    return last_version
+
+def get_complete_json():
+    logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
+    logger.login()
+    complete_json=logger.test_json()
+    st.write(complete_json)
+    versions=complete_json['query']['pages'][0]['revisions']
+    last_version=versions[-1]
+    st.write(last_version)
+
 def get_pages():
     logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
     logger.login()
     logger.get_page_info()
 
 if __name__ == '__main__':
+    add_pages_with_metadata("Gestionale")
+    #get_complete_json()
     #get_pages()
-    test_chat_class()
+    #test_chat_class()
     #add_pages("OFFERTE_CLIENTI")
     #get_all_elements()
     #test_get_answers_questions("Gestionale")

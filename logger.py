@@ -51,6 +51,17 @@ class Logger:
             api_url = f"{self.baseurl}?action=query&prop=revisions&titles={page_title}&rvslots=*&rvprop=content&formatversion=2&format=json"
             response = self.__session.get(api_url, headers=headers)
             return response.json()
+        
+    def test_json(self, page_title):
+        token=self.__token
+        headers = {
+            'Authorization': 'Bearer <{token}}>',
+        }
+
+        #the paramters are always the same except for the page title
+        api_url = f"https://wikidoc.apra.it/essenzia/api.php?action=query&prop=revisions&titles={page_title}&rvslots=*&rvprop=timestamp|content|sha1&formatversion=2&format=json"
+        response = self.__session.get(api_url, headers=headers)
+        return response.json()
     
     def set_new_baseurl(self, new_url):
         self.baseurl=new_url

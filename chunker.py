@@ -14,9 +14,11 @@ class Chunker:
         self.__document_decorator=Document_decorator(self.__embedder)
         self.vector_amount_in_db=vector_amount_in_db
         self.keyword=None
+        self.sha1=None
         
     
-    def get_document_chunks(self, document, page_title):
+    def get_document_chunks(self, document, page_title, sha1):
+        self.sha1=sha1
         #self.keyword=self.__document_decorator.get_page_keyword(document)
         sentences=self.__create_document_chunks(document)
         # if there is only one chunk in the document
@@ -34,6 +36,7 @@ class Chunker:
         #document_chunks.extend(self.get_answers_questions(document))
         document_chunks=self.__document_decorator.add_autoincrement_value(document_chunks, self.vector_amount_in_db)
         document_chunks=self.__document_decorator.remove_index_and_simple_sentece_from_senteces(document_chunks)
+        document_chunks=self.__document_decorator.add_metadata(document_chunks, "web",self.sha1)
         return document_chunks
 
     
