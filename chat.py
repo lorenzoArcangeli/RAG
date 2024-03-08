@@ -24,7 +24,7 @@ class Chat:
         llm = ChatOpenAI()
         conversation_chain = ConversationalRetrievalChain.from_llm(
             llm=llm,
-            retriever=database.as_retriever(),
+            retriever=database.as_retriever(search_kwargs={"k": 5}),
         )
         return conversation_chain
 
