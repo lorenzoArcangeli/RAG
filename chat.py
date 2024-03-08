@@ -11,7 +11,7 @@ class Chat:
         if 'generated' not in st.session_state:
             st.session_state['generated'] = ["Ciao! Ho alcune domande"]
         if 'past' not in st.session_state:
-            st.session_state['past'] = ["Ciao! Ho alcune domande"]
+            st.session_state['past'] = ["Ciao! Ho alcune risposte (forse)"]
         # Create containers for chat history and user input
         self.response_container = st.container()
         self.container = st.container()
