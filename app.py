@@ -73,9 +73,37 @@ def get_all_elements():
     database_elements=database_connection.get_all_documents()
     st.write(database_elements)
 
+def add_pages(page_title):
+    load_dotenv()
+    logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
+    logger.login()
+    database_connection=Database_connector("localhost", 8000)
+    database_connection.connect()
+    embedder= Embedder()
+    database_connection.get_or_create_collection("RAG", embedder)
+    page_json=logger.get_content_page(page_title)
+    st.write(page_json)
+    st.write(page_json['query']['pages'][0]['revisions'][0]['slots']['main']['content'])
+    vector_amount_in_db=database_connection.get_vector_amount_in_db()
+    st.write(vector_amount_in_db)
+    chunker=Chunker(vector_amount_in_db, embedder)
+    chunks=chunker.get_document_chunks([Document(page_content=page_json['query']['pages'][0]['revisions'][0]['slots']['main']['content'])], "OFFERTE_CLIENTI")
+    st.write(chunks)
+    database_connection.add_elements_to_collection(chunks)
+    st.write(database_connection.get_all_documents())
+
+def get_pages():
+    logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
+    logger.login()
+    logger.get_page_info()
+
 if __name__ == '__main__':
-    #test_get_answers_questions("Gestionale")
+    #get_pages()
     test_chat_class()
+    #add_pages("OFFERTE_CLIENTI")
+    #get_all_elements()
+    #test_get_answers_questions("Gestionale")
+    #test_chat_class()
     #get_all_elements()
     
     

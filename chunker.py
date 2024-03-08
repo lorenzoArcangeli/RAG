@@ -17,7 +17,7 @@ class Chunker:
         
     
     def get_document_chunks(self, document, page_title):
-        self.keyword=self.__document_decorator.get_page_keyword(document)
+        #self.keyword=self.__document_decorator.get_page_keyword(document)
         sentences=self.__create_document_chunks(document)
         # if there is only one chunk in the document
         if len(sentences)<=1:
@@ -32,7 +32,7 @@ class Chunker:
         #PER QUESTO CI VUOLE L'ACCOUNT A PAGAMENTO
         #document_chunks.append(self.__document_decorator.get_page_summary(document, page_title))
         #document_chunks.extend(self.get_answers_questions(document))
-        #document_chunks=self.__document_decorator.add_autoincrement_value(document_chunks, self.vector_amount_in_db)
+        document_chunks=self.__document_decorator.add_autoincrement_value(document_chunks, self.vector_amount_in_db)
         document_chunks=self.__document_decorator.remove_index_and_simple_sentece_from_senteces(document_chunks)
         return document_chunks
 
@@ -138,7 +138,7 @@ class Chunker:
     
     def __check_len(self, document):
         #chek if amiunt of token id above the limit
-        if len(document[0].page_content)*0.75>2000:
+        if len(document[0].page_content)*0.75>1024:
             #create chunks
             text_splitter=RecursiveCharacterTextSplitter(
                 chunk_size=1024, chunk_overlap=50
@@ -156,8 +156,8 @@ class Chunker:
         sentences = [{'sentence': x, 'index' : i} for i, x in enumerate(string_text)]
 
         #keyword of the page
-        sentences = [{'sentence': f"{"informazioni correlate: "}{self.keyword}{"\n\n\n"} {x['sentence']}", 'index': x['index']} for x in sentences]
-        
+        #sentences = [{'sentence': f"{"informazioni correlate: "}{self.keyword}{"\n\n\n"} {x['sentence']}", 'index': x['index']} for x in sentences]
+        sentences = [{'sentence': f"{x['sentence']}", 'index': x['index']} for x in sentences]
         #get sentence and combined_sentence
         for i in range(len(sentences)):
             combined_sentence = sentences[i]['sentence']

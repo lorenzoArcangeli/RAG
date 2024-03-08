@@ -13,3 +13,12 @@ Documenti_Ext
 Wine
 Essenzia8
 Essenzia11
+
+
+Pagine da inserire:
+
+SERVIZI_BATCH
+Essenzia 11
+OFFERTA_CLIENTI
+Registri_Telematici
+E_MAIL

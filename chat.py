@@ -1,6 +1,7 @@
 from streamlit_chat import message
 import streamlit as st
-from langchain_openai import ChatOpenAI
+#from langchain_openai import ChatOpenAI 
+from langchain.chat_models import ChatOpenAI # questo è deprecato
 from langchain.chains import ConversationalRetrievalChain
 
 class Chat:
@@ -9,7 +10,7 @@ class Chat:
         if 'history' not in st.session_state:
             st.session_state['history'] = []
         if 'generated' not in st.session_state:
-            st.session_state['generated'] = ["Ciao! Ho alcune risposte (forse)"]
+            st.session_state['generated'] = ["Ciao! Sono l'assistente virtuale di Essenzia. Chiedimi qualcosa"]
         if 'past' not in st.session_state:
             st.session_state['past'] = ["Ciao! Ho alcune domande"]
         # Create containers for chat history and user input
@@ -21,7 +22,7 @@ class Chat:
 
     def __get_conversational_chain(self, database):
         st.session_state.conversation=database
-        llm = ChatOpenAI()
+        llm = ChatOpenAI(model="gpt-3.5-turbo")
         conversation_chain = ConversationalRetrievalChain.from_llm(
             llm=llm,
             retriever=database.as_retriever(search_kwargs={"k": 5}),

@@ -57,7 +57,7 @@ class Database_connector:
     def get_vector_amount_in_db(self):
         return self.__collection.count()
 
-    def add_elements_to_collection(self, chunks, embedder):
+    def add_elements_to_collection(self, chunks):
         #db = Chroma.from_documents(self.__list_extract_from_dict_test(chunks), embedder.get_embedding_funciont())
         
         if self.__collection==None:
@@ -71,7 +71,7 @@ class Database_connector:
             )
         
         return True
-    '''
+    
     def __list_extract_from_dict_test(self, chunks):
         # void list
         combined_sentences_list = []
@@ -81,7 +81,7 @@ class Database_connector:
             combined_sentences_list.append(Document(page_content=chunk['combined_sentence']))
         # return lists
         return combined_sentences_list
-    '''
+    
     
     def __list_extract_from_dict(self, chunks):
         # void list
