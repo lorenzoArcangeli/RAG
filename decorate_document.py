@@ -15,13 +15,13 @@ class Document_decorator:
         self.__embedder=embedder
         self.__llm=ChatOpenAI(model="gpt-3.5-turbo")
     
-    #per metadata si intende uuid, sha1 e tipo (web/pdf)
-    def add_metadata(self, sentences, type, sha1):
+    def add_metadata(self, sentences, type, sha1, title):
         for sentence in sentences:
-            sentence['type']=type
+            sentence['type']=type # web page or pdf
             new_uuid=uuid.uuid4()
-            sentence['uuid']=str(new_uuid)
-            sentence['sha1']=str(sha1)
+            sentence['uuid']=str(new_uuid) # instead of using increment id
+            sentence['sha1']=str(sha1) # used to check if the web page/pad has been changed
+            sentence['title']=str(title) # used to identify the we
         return sentences
 
     def get_page_summary(self, document, page_title):
@@ -94,8 +94,6 @@ class Document_decorator:
         return new_chunk_keyword
     
 
-    
-    #TODO: FUNZIONA MA CE DA RIVEDERLO
     def extract_questions_anwers_from_document(self, sentences):
         OPENAI_API_MODEL=os.environ["OPENAI_API_MODEL"]="gpt-3.5-turbo"
         #Guardare come farlo senza OpenAI

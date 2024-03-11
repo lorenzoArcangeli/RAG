@@ -17,8 +17,9 @@ class Chunker:
         self.sha1=None
         
     
-    def get_document_chunks(self, document, page_title, sha1):
+    def get_document_chunks(self, document, title, sha1):
         self.sha1=sha1
+        # get_page_keyword --> used to add page keyword
         #self.keyword=self.__document_decorator.get_page_keyword(document)
         sentences=self.__create_document_chunks(document)
         # if there is only one chunk in the document
@@ -31,15 +32,17 @@ class Chunker:
             distances, sentences = self.__calculate_cosine_distances(sentences)
             indexes_above_treshold_distance=self.__identify_indexes_above_treshold_distance(distances)
             document_chunks=self.__group_chunks(indexes_above_treshold_distance, sentences)
-        #PER QUESTO CI VUOLE L'ACCOUNT A PAGAMENTO
-        #document_chunks.append(self.__document_decorator.get_page_summary(document, page_title))
+        # get_page_summary --> used to add summery 
+        # get_answers_questions --> used to add questions answers
+        # add_autoincrement_value --> no more used
+        #document_chunks.append(self.__document_decorator.get_page_summary(document, title))
         #document_chunks.extend(self.get_answers_questions(document))
-        document_chunks=self.__document_decorator.add_autoincrement_value(document_chunks, self.vector_amount_in_db)
+        #document_chunks=self.__document_decorator.add_autoincrement_value(document_chunks, self.vector_amount_in_db)
         document_chunks=self.__document_decorator.remove_index_and_simple_sentece_from_senteces(document_chunks)
-        document_chunks=self.__document_decorator.add_metadata(document_chunks, "web",self.sha1)
+        document_chunks=self.__document_decorator.add_metadata(document_chunks, "web",self.sha1, title)
         return document_chunks
 
-    
+    #METODO DI TEST PER TESTARE L'ESTRAZIONE DI DOMANDE E RISPOSTE
     def get_answers_questions_test(self, document):
         self.keyword=self.__document_decorator.get_page_keyword(document)
         sentences=self.__create_document_chunks(document)
@@ -57,39 +60,36 @@ class Chunker:
         docs_split=text_splitter.split_documents(document)
         string_text = [docs_split[i].page_content for i in range(len(docs_split))]
         sentences = [{'sentence': x, 'index' : i} for i, x in enumerate(string_text)]
-
+        # the second argument indicates the number of sentences to combine before and after the current sentence
         sentences = self.__combine_sentences(sentences, 1)
-
+        # emnedding
         embeddings=self.__embedder.do_embedding(sentences)
         for i, sentence in enumerate(sentences):
             sentence['combined_sentence_embedding'] = embeddings[i]
+        #st.write("sentences")
+        #st.write(sentences)
         return sentences
 
     #buffer size: number of sentence before and after the current one to be joined
     def __combine_sentences(self, sentences, buffer_size):
-        # Go through each sentence dict
         for i in range(len(sentences)):
-            # Create a string that will hold the sentences which are joined
+            # create a string for the joined sentences
             combined_sentence = ''
-            # Add sentences before the current one, based on the buffer size.
+            # add sentences before the current one, based on the buffer size.
             for j in range(i - buffer_size, i):
-                # Check if the index j is not negative (to avoid index out of range like on the first one)
+                # check if the index j is not negative (avoid problem for the first sentence)
                 if j >= 0:
-                    # Add the sentence at index j to the combined_sentence string
                     combined_sentence += sentences[j]['sentence'] + ' '
-            # Add the current sentence
+            # add the current sentence
             combined_sentence += sentences[i]['sentence']
 
-            # Add sentences after the current one, based on the buffer size
+            # add sentences after the current one, based on the buffer size
             for j in range(i + 1, i + 1 + buffer_size):
-                # Check if the index j is within the range of the sentences list
+                # check if the index j is within the range of the sentences list
                 if j < len(sentences):
-                    # Add the sentence at index j to the combined_sentence string
                     combined_sentence += ' ' + sentences[j]['sentence']
-            # Then add the whole thing to your dict
-            # Store the combined sentence in the current sentence dict
+            # store the combined sentence in the current sentence dict
             sentences[i]['combined_sentence'] = combined_sentence
-        
         return sentences
 
     def __calculate_cosine_distances(self, sentences):
@@ -97,80 +97,76 @@ class Chunker:
         for i in range(len(sentences) - 1):
             embedding_current = sentences[i]['combined_sentence_embedding']
             embedding_next = sentences[i + 1]['combined_sentence_embedding']
-            # Calculate cosine similarity
+            # calculate cosine similarity
             similarity = cosine_similarity([embedding_current], [embedding_next])[0][0]
-            # Convert to cosine distance
+            # convert to cosine distance
             distance = 1 - similarity
-            # Append cosine distance to the list
+            # append cosine distance to the list
             distances.append(distance)
-            # Store distance in the dictionary
+            # store distance in the dictionary
             sentences[i]['distance_to_next'] = distance
         return distances, sentences
 
     def __identify_indexes_above_treshold_distance(self, distances, distance=95):
         # identify the outlier
-        # higher percentile --> less chunks, lower percentile --> more chunks
+        # higher percentile --> less chunks
+        # lower percentile --> more chunks
         breakpoint_distance_threshold = np.percentile(distances, distance) 
-        # Amount of distances above your threshold
-        num_distances_above_theshold = len([x for x in distances if x > breakpoint_distance_threshold]) 
         # Indexes of the chunks with cosine distance above treshold
-        # The indices of those breakpoints on your list
+        # The indices of those breakpoints on the list
         indices_above_thresh = [i for i, x in enumerate(distances) if x > breakpoint_distance_threshold]
         return indices_above_thresh
 
     def __group_chunks(self, indices, sentences):
-        # Initialize the start index
+        # initialize the start index
         start_index = 0
-        # Create a list to hold the grouped sentences
+        # create a list to hold the grouped sentences
         chunks = []
-        # Iterate through the breakpoints to slice the sentences
+        # iterate through the breakpoints to slice the sentences
         for index in indices:
-            # The end index is the current breakpoint
+            # the end index is the current breakpoint
             end_index = index
-            # Slice the sentence_dicts from the current start index to the end index
+            # slice the sentence_dicts from the current start index to the end index
             group = sentences[start_index:end_index + 1]
             combined_text = ' '.join([repr(d['sentence']) for d in group])
             chunks.extend(self.__check_len([Document(page_content=combined_text)]))
             start_index = index + 1
-        # The last group, if any sentences remain
+        # the last group, if any sentences remain
         if start_index < len(sentences):
             combined_text = ' '.join([repr(d['sentence']) for d in sentences[start_index:]])
             chunks.extend(self.__check_len([Document(page_content=combined_text)]))
-        # grouped_sentences now contains the chunked sentences
         return chunks
     
     def __check_len(self, document):
-        #chek if amiunt of token id above the limit
+        # chek if the amount of token id above the limit
         if len(document[0].page_content)*0.75>1024:
-            #create chunks
+            # create chunks
             text_splitter=RecursiveCharacterTextSplitter(
                 chunk_size=1024, chunk_overlap=50
             )
             docs_split=text_splitter.split_documents(document)
-            #get new embeddings for the new chunks
+            # get new embeddings for the new chunks
             return self.__get_new_chunk(len(docs_split), docs_split)
         else:
+            #st.write("Sotto i 1024")
             return self.__get_new_chunk(1, document)
     
     def __get_new_chunk(self, leng, document):
         splitted_chunks = []
-        #get strings from documents
+        # get strings from documents
         string_text = [document[i].page_content for i in range(leng)]
         sentences = [{'sentence': x, 'index' : i} for i, x in enumerate(string_text)]
-
         #keyword of the page
         #sentences = [{'sentence': f"{"informazioni correlate: "}{self.keyword}{"\n\n\n"} {x['sentence']}", 'index': x['index']} for x in sentences]
         sentences = [{'sentence': f"{x['sentence']}", 'index': x['index']} for x in sentences]
-        #get sentence and combined_sentence
+        # get sentence and combined_sentence
         for i in range(len(sentences)):
             combined_sentence = sentences[i]['sentence']
             sentences[i]['combined_sentence'] = combined_sentence
-        #oaiembeds = OpenAIEmbeddings()
-        #get new embeddings for the new chunks
-        #embeddings = oaiembeds.embed_documents([x['combined_sentence'] for x in sentences])
+        # get new embeddings for the new chunks
         embeddings=self.__embedder.do_embedding(sentences)
         for i, sentence in enumerate(sentences):
             sentence['combined_sentence_embedding'] = embeddings[i]
-        #add the new chunks to the list
+        # add the new chunks to the list
         splitted_chunks.extend(sentences)
         return splitted_chunks

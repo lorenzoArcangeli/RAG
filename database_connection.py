@@ -62,28 +62,29 @@ class Database_connector:
         
         if self.__collection==None:
             return False
-        result = self.__list_extract_from_dict(chunks)
-        combined_sentences_list, combined_sentence_embeddings_list, ids_list = result
+        result = self.list_extract_from_dict(chunks)
+        combined_sentences_list, combined_sentence_embeddings_list, uuid_list = result
+        metadata=self.get_metadata(chunks)
         self.__collection.add(
                 documents=combined_sentences_list,
                 embeddings=combined_sentence_embeddings_list,
-                ids=ids_list
+                metadatas=metadata,
+                ids=uuid_list
             )
-        
         return True
     
-    def __list_extract_from_dict_test(self, chunks):
-        # void list
-        combined_sentences_list = []
-
+    def get_metadata(self, chunks):
+        metadata_list = [] 
         for chunk in chunks:
-            # extract fields
-            combined_sentences_list.append(Document(page_content=chunk['combined_sentence']))
-        # return lists
-        return combined_sentences_list
-    
-    
-    def __list_extract_from_dict(self, chunks):
+            metadata = {
+                'type': chunk['type'],
+                'sha1': chunk['sha1'],
+                'title': chunk['title']
+            }
+            metadata_list.append(metadata)
+        return metadata_list
+      
+    def list_extract_from_dict(self, chunks):
         # void list
         combined_sentences_list = []
         combined_sentence_embeddings_list = []
@@ -94,7 +95,7 @@ class Database_connector:
             combined_sentences_list.append(chunk['combined_sentence'])
             #qua è una lista di liste, quindi tocca un attimo modificarlo
             combined_sentence_embeddings_list.append(chunk['combined_sentence_embedding'])
-            ids_list.append(str(chunk['id']))
+            ids_list.append(str(chunk['uuid']))
         st.write("LIST TYPE")
         st.write(type(combined_sentence_embeddings_list))
         # return lists
@@ -136,7 +137,7 @@ class Database_connector:
 
     def get_all_documents(self):
         #by default it returns only documents and ids, I added the embeddings 
-        return self.__collection.get(include=['embeddings', 'documents'])
+        return self.__collection.get(include=['embeddings', 'documents', 'metadatas'])
     
     def remove_elements(self):
         numeri = [str(numero) for numero in range(17, 35)]

@@ -63,6 +63,11 @@ class Logger:
         response = self.__session.get(api_url, headers=headers)
         return response.json()
     
+    def get_last_version(self, json):
+        versions=json['query']['pages'][0]['revisions']
+        last_version=versions[-1]
+        return last_version
+    
     def set_new_baseurl(self, new_url):
         self.baseurl=new_url
     '''
