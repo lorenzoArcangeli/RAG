@@ -1,5 +1,11 @@
 import chromadb
 from langchain_community.vectorstores import Chroma
+from enum import Enum
+
+class Check_Page(Enum):
+    NEED_MODIFY_EMBEDDING = 1
+    NO_NEED = 2
+    NEED_EMBEDDING=3
 
 class Database_connector:
 
@@ -109,6 +115,38 @@ class Database_connector:
         # list of document
         return keyword_result
     
+    def delete_collection(self, collection_name):
+        self.__chroma_client.delete_collection(name=collection_name) 
+
+    def check_page(self, page_title, sha1):
+        result=self.__collection.get(
+            include=['metadatas'],
+            where={
+                    "title": str(page_title)
+                }
+        )
+        if len(result)==0:
+            return Check_Page.NEED_EMBEDDING, None
+        else:
+            for metadata in result['metadatas']:
+                if metadata['sha1']==str(sha1):
+                    return Check_Page.NO_NEED, None
+        return Check_Page.NEED_MODIFY_EMBEDDING, result['ids']
+
+    def modify_elements_of_collection(self, chunks, ids):
+        if self.__collection==None:
+            return False
+        result = self.list_extract_from_dict(chunks)
+        combined_sentences_list, combined_sentence_embeddings_list, uuid_list = result
+        metadata=self.get_metadata(chunks)
+        self.__collection.update(
+                ids=ids,
+                documents=combined_sentences_list,
+                embeddings=combined_sentence_embeddings_list,
+                metadatas=metadata
+            )
+        return True
+
     '''
     def __get_multiple_where_condition(self, keyword):
         or_clause = []

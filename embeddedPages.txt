@@ -1,7 +1,7 @@
 Gestionale
 Base
 Amministrazione
-Accise --> non ho capito perchè ma con questo se rompe tutto
+Accise
 BPM
 Conferimenti
 IWine
@@ -13,12 +13,7 @@ Documenti_Ext
 Wine
 Essenzia8
 Essenzia11
-
-
-Pagine da inserire:
-
 SERVIZI_BATCH
-Essenzia 11
-OFFERTA_CLIENTI
+OFFERTE_CLIENTI
 Registri_Telematici
 E_MAIL

@@ -8,11 +8,10 @@ import streamlit as st
 
 class Chunker:
     
-    def __init__(self, vector_amount_in_db, embedder):
+    def __init__(self, embedder):
         #create embedder object
         self.__embedder=embedder
         self.__document_decorator=Document_decorator(self.__embedder)
-        self.vector_amount_in_db=vector_amount_in_db
         self.keyword=None
         self.sha1=None
         

@@ -1,4 +1,4 @@
-from database_connection import Database_connector
+from database_connection import Database_connector, Check_Page
 from embedder import Embedder
 #from test.chat import Chat
 from dotenv import load_dotenv
@@ -8,7 +8,6 @@ import streamlit as st
 from chunker import Chunker
 from langchain_core.documents import Document
 from UI_chat import UIChat
-
 
 def test_chat_class():
     database_connection=Database_connector("localhost", 8000)
@@ -115,7 +114,7 @@ def get_pages_with_metadata(page_title):
     result=database_connection.get_all_documents()
     st.write(result)
 
-def add_list_of_pages():
+def add_list_of_pages(page_titles):
     load_dotenv()
     logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
     logger.login()
@@ -123,12 +122,11 @@ def add_list_of_pages():
     database_connection.connect()
     embedder= Embedder()
     database_connection.get_or_create_collection("RAG", embedder)
-    page_titles=["Gestionale", "IWine", "Wine"]
     for page_title in page_titles:
         page_json=logger.complete_json(page_title)  
-        vector_amount_in_db=database_connection.get_vector_amount_in_db()
-        st.write(vector_amount_in_db)
-        chunker=Chunker(vector_amount_in_db, embedder)
+        #vector_amount_in_db=database_connection.get_vector_amount_in_db()
+        #st.write(vector_amount_in_db)
+        chunker=Chunker(embedder)
         last_version=logger.get_last_version(page_json)
         chunks=chunker.get_document_chunks([Document(page_content=last_version['slots']['main']['content'])], page_title, last_version['sha1'])
         database_connection.add_elements_to_collection(chunks)
@@ -138,16 +136,61 @@ def add_list_of_pages():
 def get_complete_json():
     logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
     logger.login()
-    complete_json=logger.complete_json()
+    complete_json=logger.complete_json("Registri_Telematici")
     st.write(complete_json)
     versions=complete_json['query']['pages'][0]['revisions']
     last_version=versions[-1]
     st.write(last_version)
 
+def add_list_of_pages_check_sha1(page_titles):
+    load_dotenv()
+    logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
+    logger.login()
+    database_connection=Database_connector("localhost", 8000)
+    database_connection.connect()
+    embedder= Embedder()
+    database_connection.get_or_create_collection("RAG", embedder)
+    for page_title in page_titles:
+        page_json=logger.complete_json(page_title) 
+        last_version=logger.get_last_version(page_json)
+        need_embedding, ids=database_connection.check_page(page_title, last_version['sha1'])
+        if need_embedding!=Check_Page.NO_NEED:
+            chunker=Chunker(embedder)
+            chunks=chunker.get_document_chunks([Document(page_content=last_version['slots']['main']['content'])], page_title, last_version['sha1'])
+            if need_embedding==Check_Page.NEED_EMBEDDING:
+                database_connection.add_elements_to_collection(chunks)
+            else:
+                database_connection.modify_elements_of_collection(chunks, ids)
+    result=database_connection.get_all_documents()
+    st.write(result)
+
+def test_check_page_title_sha1(page_title):
+    database_connection=Database_connector("localhost", 8000)
+    database_connection.connect()
+    embedder= Embedder()
+    database_connection.get_or_create_collection("RAG", embedder)
+    res, ids=database_connection.check_page(page_title, "ciao")
+    st.write(res)
+    st.write(ids)
+    elements=database_connection.get_all_documents()
+    st.write(elements)
+    #c493407923c50830655d1a416e3df11294c06ef7
+    '''
+    0:"1784a171-9441-4fca-a786-a65d7a135bbd"
+    1:"6166e1a0-af60-4554-9c22-901849d7bf75"
+    2:"a49ffbaa-7a51-4ec8-b0b5-c43fabee6d5a"
+    3:"e3d08ba5-0ee9-44a1-a64f-03467855d5bd"
+    '''
+
 def get_pages():
     logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
     logger.login()
     logger.get_page_info()
+
+def delete_collection(name):
+    database_connection=Database_connector("localhost", 8000)
+    database_connection.connect()
+    database_connection.delete_collection(name)
 
 def UI_chat():
     database_connection=Database_connector("localhost", 8000)
@@ -158,9 +201,40 @@ def UI_chat():
     chat=UIChat(database)
     chat.chat()
 
+def get_pages():
+    logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
+    logger.login()
+    logger.get_pages_in_namespace(0)
+
 if __name__ == '__main__':
+    #get_complete_json()
+    #get_pages()
     #get_pages_with_metadata("Gestionale")
-    add_list_of_pages()
+    #delete_collection("RAG")
+    #test_check_page_title_sha1("Pippo")
+    '''
+    page_titles=["SERVIZI_BATCH",
+    "OFFERTE_CLIENTI",
+    "Registri_Telematici",
+    "E_MAIL"]
+    add_list_of_pages(page_titles)
+
+    page_titles=["Gestionale","Base",
+"Amministrazione",
+"Accise",
+"BPM",
+"Conferimenti",
+"IWine",
+"Mobile",
+"Progetti",
+"Produzione",
+"ESSENZIA_WS",
+"Documenti_Ext",
+"Wine",
+"Essenzia8",
+"Essenzia11"]
+    add_list_of_pages(page_titles)
+    '''
     #UI_chat()
     #add_pages_with_metadata("Gestionale")
     #get_complete_json()

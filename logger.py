@@ -72,6 +72,27 @@ class Logger:
         self.baseurl=new_url
 
 
+    #PROVA
+    def get_pages_in_namespace(self, namespace):
+        token=self.__token
+        headers = {
+            'Authorization': 'Bearer <{token}}>',
+        }
+        # Imposta i parametri della richiesta
+        params = {
+            'action': 'query',
+            'list': 'allpages',
+#            'apnamespace': namespace,
+            'aplimit':'max',
+            'format': 'json'
+        }
+
+        # Esegui la richiesta alle API di MediaWiki
+        response = requests.get(self.baseurl+"?", headers=headers, params=params)
+        data = response.json()
+
+        st.write(data)
+
 
     '''
     Usate per prendere le pagine web e i nomi
