@@ -52,7 +52,7 @@ class Logger:
             response = self.__session.get(api_url, headers=headers)
             return response.json()
         
-    def test_json(self, page_title):
+    def complete_json(self, page_title):
         token=self.__token
         headers = {
             'Authorization': 'Bearer <{token}}>',
@@ -70,7 +70,13 @@ class Logger:
     
     def set_new_baseurl(self, new_url):
         self.baseurl=new_url
+
+
+
     '''
+    Usate per prendere le pagine web e i nomi
+
+
     def edit_file(self):
         with open("Pages.txt", 'r') as file:
                 # Leggi tutte le righe del file e memorizzale in una lista
@@ -81,7 +87,8 @@ class Logger:
             # Scrivi ogni stringa nella lista su una nuova riga
             for stringa in nuove_stringhe:
                 file.write(f"{stringa}")
-    '''
+
+
     def get_page_info(self):
         if self.__token==None:
             raise Exception("Token to connect is not present")
@@ -101,7 +108,7 @@ class Logger:
                 api_url = f"{self.baseurl}?action=query&prop=revisions&titles={righe}&rvslots=*&rvprop=timestamp|content|sha1&formatversion=2&format=json"
                 response = self.__session.get(api_url, headers=headers)
                 st.write(response.json())
-
+    '''
     '''
     def get_page(self, char): 
         token=self.__token

@@ -1,12 +1,5 @@
 import chromadb
-from embedder import Embedder
 from langchain_community.vectorstores import Chroma
-import streamlit as st
-from langchain.schema import Document
-import time
-
-
-
 
 class Database_connector:
 
@@ -18,29 +11,24 @@ class Database_connector:
         self.__db=None
 
     def connect(self):
-        self.__chroma_client= chromadb.HttpClient(host='localhost', port=8000)
-        #self.__chroma_client.delete_collection(name="RAG")
+        self.__chroma_client= chromadb.HttpClient(host=self.__host, port=self.__port)
     
-    #da aggiungere il controllo se già esiste
     def create_collection(self, collection_name, embedder):
         self.__collection = self.__chroma_client.create_collection(
             name=collection_name,
-            metadata={"hnsw:space": "cosine"} # l2 is the default
+            metadata={"hnsw:space": "cosine"} # l2 is by default
         )
         self.__db=Chroma(
             client=self.__chroma_client,
             collection_name=collection_name,
-            # non lo so se lo devo passare oppure no
             embedding_function=embedder.get_embedding_funciont()
         )
-        
-    #anche qui mettere il controllo
+
     def get_collection(self, collection_name, embedder):
         self.__collection = self.__chroma_client.get_collection(name=collection_name)
         self.__db=Chroma(
             client=self.__chroma_client,
             collection_name=collection_name,
-            # non lo so se lo devo passare oppure no
             embedding_function=embedder.get_embedding_funciont()
         )
 
@@ -49,17 +37,15 @@ class Database_connector:
         self.__db=Chroma(
             client=self.__chroma_client,
             collection_name=collection_name,
-            # non lo so se lo devo passare oppure no
             embedding_function=embedder.get_embedding_funciont()
         )
 
-    #anche qui mettere il controllo
+    '''
+    era usato prima di inserire l'uuid
     def get_vector_amount_in_db(self):
         return self.__collection.count()
-
-    def add_elements_to_collection(self, chunks):
-        #db = Chroma.from_documents(self.__list_extract_from_dict_test(chunks), embedder.get_embedding_funciont())
-        
+    '''
+    def add_elements_to_collection(self, chunks):     
         if self.__collection==None:
             return False
         result = self.list_extract_from_dict(chunks)
@@ -74,6 +60,7 @@ class Database_connector:
         return True
     
     def get_metadata(self, chunks):
+        # extract metadata from chunks
         metadata_list = [] 
         for chunk in chunks:
             metadata = {
@@ -85,7 +72,7 @@ class Database_connector:
         return metadata_list
       
     def list_extract_from_dict(self, chunks):
-        # void list
+        # extract lists from chunks
         combined_sentences_list = []
         combined_sentence_embeddings_list = []
         ids_list = []
@@ -93,15 +80,12 @@ class Database_connector:
         for chunk in chunks:
             # extract fields
             combined_sentences_list.append(chunk['combined_sentence'])
-            #qua è una lista di liste, quindi tocca un attimo modificarlo
             combined_sentence_embeddings_list.append(chunk['combined_sentence_embedding'])
             ids_list.append(str(chunk['uuid']))
-        st.write("LIST TYPE")
-        st.write(type(combined_sentence_embeddings_list))
-        # return lists
+        #st.write("LIST TYPE")
+        #st.write(type(combined_sentence_embeddings_list))
         return combined_sentences_list, combined_sentence_embeddings_list, ids_list
 
-    #mettere il controllo
     def get_retriever_by_semantic_search(self):
         return self.__db.as_retriever(search_kwargs={"k": 10})
     
@@ -116,7 +100,7 @@ class Database_connector:
         # list of document
         return semantic_result
 
-    #probabilmetne non serve
+    # non usato
     def get_document_based_on_keyword(self, keyword):
         keyword_where_condition=self.__get_multiple_where_condition(keyword)
         keyword_result=self.__collection.get(
@@ -139,6 +123,7 @@ class Database_connector:
         #by default it returns only documents and ids, I added the embeddings 
         return self.__collection.get(include=['embeddings', 'documents', 'metadatas'])
     
+    # non usato
     def remove_elements(self):
         numeri = [str(numero) for numero in range(17, 35)]
         self.__collection.delete(
@@ -146,6 +131,7 @@ class Database_connector:
         )
 
     '''
+    prova per avere clause where composte
     where_clause = {
         "$or" : [
             {"contains" : "first_string"}, 

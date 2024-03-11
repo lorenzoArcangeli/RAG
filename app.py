@@ -100,7 +100,7 @@ def get_pages_with_metadata(page_title):
     database_connection.connect()
     embedder= Embedder()
     database_connection.get_or_create_collection("RAG", embedder)
-    page_json=logger.test_json(page_title)  
+    page_json=logger.complete_json(page_title)  
     vector_amount_in_db=database_connection.get_vector_amount_in_db()
     st.write(vector_amount_in_db)
     chunker=Chunker(vector_amount_in_db, embedder)
@@ -125,7 +125,7 @@ def add_list_of_pages():
     database_connection.get_or_create_collection("RAG", embedder)
     page_titles=["Gestionale", "IWine", "Wine"]
     for page_title in page_titles:
-        page_json=logger.test_json(page_title)  
+        page_json=logger.complete_json(page_title)  
         vector_amount_in_db=database_connection.get_vector_amount_in_db()
         st.write(vector_amount_in_db)
         chunker=Chunker(vector_amount_in_db, embedder)
@@ -138,7 +138,7 @@ def add_list_of_pages():
 def get_complete_json():
     logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
     logger.login()
-    complete_json=logger.test_json()
+    complete_json=logger.complete_json()
     st.write(complete_json)
     versions=complete_json['query']['pages'][0]['revisions']
     last_version=versions[-1]
