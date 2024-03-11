@@ -1,5 +1,7 @@
 import requests
 import streamlit as st
+from itertools import product
+
 class Logger:
 
     def __init__(self, username, password, baseurl):
@@ -71,7 +73,7 @@ class Logger:
     def set_new_baseurl(self, new_url):
         self.baseurl=new_url
 
-
+    '''
     #PROVA
     def get_pages_in_namespace(self, namespace):
         token=self.__token
@@ -94,8 +96,8 @@ class Logger:
         st.write(data)
 
 
-    '''
-    Usate per prendere le pagine web e i nomi
+    
+    #Usate per prendere le pagine web e i nomi
 
 
     def edit_file(self):
@@ -129,8 +131,7 @@ class Logger:
                 api_url = f"{self.baseurl}?action=query&prop=revisions&titles={righe}&rvslots=*&rvprop=timestamp|content|sha1&formatversion=2&format=json"
                 response = self.__session.get(api_url, headers=headers)
                 st.write(response.json())
-    '''
-    '''
+
     def get_page(self, char): 
         token=self.__token
         headers = {
@@ -144,11 +145,26 @@ class Logger:
             # Scrivi ogni stringa nella lista su una nuova riga
             for stringa in result[3]:
                 file.write(f"{stringa}\n")
-    
-    def get_pages(self):
-        alfabeto = [chr(ord('a') + i) for i in range(26)]  # Lettere minuscole dell'alfabeto
-        numeri = [str(i) for i in range(10)]  # Numeri da 0 a 9
-        lista_completa = alfabeto + numeri
-        for item in lista_completa:
-            self.get_page(item)
-    '''
+
+    def get_page_test(self, char): 
+        token=self.__token
+        headers = {
+            'Authorization': 'Bearer <{token}}>',
+        }
+        #the paramters are always the same except for the page title
+        api_url = f"https://wikidoc.apra.it/essenzia/api.php?action=opensearch&search={char}&namespace=0&format=json"
+        response = self.__session.get(api_url, headers=headers)
+        result=response.json()
+        found=False
+        with open("Pages_test.txt", 'r') as file:
+            for linea in file:
+                if api_url in linea:
+                    found=True
+                    break
+        if found==True:
+            with open("Pages_test.txt", 'a') as file:
+                # Scrivi ogni stringa nella lista su una nuova riga
+                for stringa in result[3]:
+                    file.write(f"{stringa}\n")
+    '''    
+

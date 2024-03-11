@@ -1,7 +1,7 @@
 from streamlit_chat import message
 import streamlit as st
-#from langchain_openai import ChatOpenAI 
-from langchain.chat_models import ChatOpenAI # questo è deprecato
+from langchain_openai import ChatOpenAI 
+#from langchain.chat_models import ChatOpenAI # questo è deprecato
 from langchain.chains import ConversationalRetrievalChain
 
 class Chat:

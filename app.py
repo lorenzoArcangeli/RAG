@@ -9,6 +9,7 @@ from chunker import Chunker
 from langchain_core.documents import Document
 from UI_chat import UIChat
 
+#test chat before UI
 def test_chat_class():
     database_connection=Database_connector("localhost", 8000)
     database_connection.connect()
@@ -18,6 +19,7 @@ def test_chat_class():
     chat=Chat(database)
     chat.chat()
 
+#test old content page (without sha1)
 def test_get_content_page(page_title):
     load_dotenv()
     logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
@@ -38,6 +40,7 @@ def test_get_content_page(page_title):
     database_elements=database_connection.get_all_documents()
     st.write(database_elements)
 
+#test answer questio using doctran --> c'è un problema con le librerie e non funziona pioù
 def test_get_answers_questions(page_title):
     load_dotenv()
     logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
@@ -55,6 +58,7 @@ def test_get_answers_questions(page_title):
     document_aq_class=chunker.get_answers_questions_test([Document(page_content=docs)])
     st.write(document_aq_class)
 
+#remove elements from db
 def remove_elements():
     database_connection=Database_connector("localhost", 8000)
     database_connection.connect()
@@ -64,6 +68,7 @@ def remove_elements():
     database_elements=database_connection.get_all_documents()
     st.write(database_elements)
 
+#get elements from db
 def get_all_elements():
     database_connection=Database_connector("localhost", 8000)
     database_connection.connect()
@@ -72,6 +77,7 @@ def get_all_elements():
     database_elements=database_connection.get_all_documents()
     st.write(database_elements)
 
+#old method to add pages
 def add_pages(page_title):
     load_dotenv()
     logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
@@ -91,6 +97,7 @@ def add_pages(page_title):
     database_connection.add_elements_to_collection(chunks)
     st.write(database_connection.get_all_documents())
 
+#current method to add single pages
 def get_pages_with_metadata(page_title):
     load_dotenv()
     logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
@@ -114,6 +121,7 @@ def get_pages_with_metadata(page_title):
     result=database_connection.get_all_documents()
     st.write(result)
 
+#current method to add list of pages
 def add_list_of_pages(page_titles):
     load_dotenv()
     logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
@@ -133,6 +141,7 @@ def add_list_of_pages(page_titles):
     result=database_connection.get_all_documents()
     st.write(result)
 
+#get json with sha1
 def get_complete_json():
     logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
     logger.login()
@@ -142,6 +151,7 @@ def get_complete_json():
     last_version=versions[-1]
     st.write(last_version)
 
+#future method to check if add new chunks is needed
 def add_list_of_pages_check_sha1(page_titles):
     load_dotenv()
     logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
@@ -164,6 +174,7 @@ def add_list_of_pages_check_sha1(page_titles):
     result=database_connection.get_all_documents()
     st.write(result)
 
+#test to verify sha1
 def test_check_page_title_sha1(page_title):
     database_connection=Database_connector("localhost", 8000)
     database_connection.connect()
@@ -192,6 +203,7 @@ def delete_collection(name):
     database_connection.connect()
     database_connection.delete_collection(name)
 
+#current method for UI chat
 def UI_chat():
     database_connection=Database_connector("localhost", 8000)
     database_connection.connect()
@@ -204,14 +216,18 @@ def UI_chat():
 def get_pages():
     logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
     logger.login()
-    logger.get_pages_in_namespace(0)
+    #logger.get_pages_in_namespace(0)
+    logger.get_pages()
 
 if __name__ == '__main__':
+    #get_pages()
     #get_complete_json()
     #get_pages()
     #get_pages_with_metadata("Gestionale")
     #delete_collection("RAG")
     #test_check_page_title_sha1("Pippo")
+    #page_titles=["Interfaccia_Essenzia_e_QualiWare"]
+    #add_list_of_pages(page_titles)
     '''
     page_titles=["SERVIZI_BATCH",
     "OFFERTE_CLIENTI",
@@ -235,7 +251,7 @@ if __name__ == '__main__':
 "Essenzia11"]
     add_list_of_pages(page_titles)
     '''
-    #UI_chat()
+    UI_chat()
     #add_pages_with_metadata("Gestionale")
     #get_complete_json()
     #get_pages()
