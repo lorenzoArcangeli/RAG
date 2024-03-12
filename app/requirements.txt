@@ -1,0 +1,11 @@
+scikit-learn
+requests
+streamlit
+langchain
+tiktoken
+numpy
+doctran
+chromadb
+streamlit_chat
+python-dotenv
+langchain-openai
