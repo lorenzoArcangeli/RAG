@@ -14,9 +14,8 @@ class Chunker:
         self.__document_decorator=Document_decorator(self.__embedder)
         self.keyword=None
         self.sha1=None
-        
-    
-    def get_document_chunks(self, document, title, sha1):
+            
+    def get_document_chunks(self, document, page_title, page_id, sha1):
         self.sha1=sha1
         # get_page_keyword --> used to add page keyword
         #self.keyword=self.__document_decorator.get_page_keyword(document)
@@ -24,9 +23,7 @@ class Chunker:
         # if there is only one chunk in the document
         if len(sentences)<=1:
             sentences[0]['combined_sentence']=sentences[0]['sentence']
-            st.write(sentences)
             document_chunks=sentences
-            st.write(document_chunks)
         else: 
             distances, sentences = self.__calculate_cosine_distances(sentences)
             indexes_above_treshold_distance=self.__identify_indexes_above_treshold_distance(distances)
@@ -38,10 +35,10 @@ class Chunker:
         #document_chunks.extend(self.get_answers_questions(document))
         #document_chunks=self.__document_decorator.add_autoincrement_value(document_chunks, self.vector_amount_in_db)
         document_chunks=self.__document_decorator.remove_index_and_simple_sentece_from_senteces(document_chunks)
-        document_chunks=self.__document_decorator.add_metadata(document_chunks, "web",self.sha1, title)
+        document_chunks=self.__document_decorator.add_metadata(document_chunks, "web",self.sha1,page_title, page_id)
         return document_chunks
 
-    #METODO DI TEST PER TESTARE L'ESTRAZIONE DI DOMANDE E RISPOSTE
+    # Test method to extract questions/anwers
     def get_answers_questions_test(self, document):
         self.keyword=self.__document_decorator.get_page_keyword(document)
         sentences=self.__create_document_chunks(document)
@@ -65,8 +62,6 @@ class Chunker:
         embeddings=self.__embedder.do_embedding(sentences)
         for i, sentence in enumerate(sentences):
             sentence['combined_sentence_embedding'] = embeddings[i]
-        #st.write("sentences")
-        #st.write(sentences)
         return sentences
 
     #buffer size: number of sentence before and after the current one to be joined
@@ -155,8 +150,6 @@ class Chunker:
         # get strings from documents
         string_text = [document[i].page_content for i in range(leng)]
         sentences = [{'sentence': x, 'index' : i} for i, x in enumerate(string_text)]
-        #keyword of the page
-        #sentences = [{'sentence': f"{"informazioni correlate: "}{self.keyword}{"\n\n\n"} {x['sentence']}", 'index': x['index']} for x in sentences]
         sentences = [{'sentence': f"{x['sentence']}", 'index': x['index']} for x in sentences]
         # get sentence and combined_sentence
         for i in range(len(sentences)):

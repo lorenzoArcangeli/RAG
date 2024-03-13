@@ -1,0 +1,33 @@
+version: '3.9'
+
+networks:
+  net:
+    driver: bridge
+services:
+  apra-chatbot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: apra-chatbot
+    ports: 
+      - 8501:8501
+    networks:
+      - net
+  chroma:
+    image: ghcr.io/chroma-core/chroma:latest
+    environment:
+      - IS_PERSISTENT=TRUE
+    volumes:
+      # Default configuration for persist_directory in chromadb/config.py
+      # Currently it's located in "/chroma/chroma/"
+      # chroma-data is the reference name
+      # chroma/chroma/ is the path in the container
+      - chroma-data:/chroma/chroma/
+    ports:
+      - 8000:8000
+    networks:
+      - net
+
+volumes:
+  chroma-data:
+    driver: local #to create the storage in the local file system (the virtual one)

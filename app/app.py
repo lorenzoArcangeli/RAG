@@ -9,15 +9,7 @@ from chunker import Chunker
 from langchain_core.documents import Document
 from UI_chat import UIChat
 
-#test chat before UI
-def test_chat_class():
-    database_connection=Database_connector("localhost", 8000)
-    database_connection.connect()
-    embedder= Embedder()
-    database_connection.get_or_create_collection("RAG", embedder)
-    database=database_connection.get_db()
-    chat=Chat(database)
-    chat.chat()
+#----TEST METHODS---
 
 #test old content page (without sha1)
 def test_get_content_page(page_title):
@@ -121,7 +113,7 @@ def get_pages_with_metadata(page_title):
     result=database_connection.get_all_documents()
     st.write(result)
 
-#current method to add list of pages
+#old method to add list of pages
 def add_list_of_pages(page_titles):
     load_dotenv()
     logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
@@ -151,36 +143,13 @@ def get_complete_json():
     last_version=versions[-1]
     st.write(last_version)
 
-#future method to check if add new chunks is needed
-def add_list_of_pages_check_sha1(page_titles):
-    load_dotenv()
-    logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
-    logger.login()
-    database_connection=Database_connector("localhost", 8000)
-    database_connection.connect()
-    embedder= Embedder()
-    database_connection.get_or_create_collection("RAG", embedder)
-    for page_title in page_titles:
-        page_json=logger.complete_json(page_title) 
-        last_version=logger.get_last_version(page_json)
-        need_embedding, ids=database_connection.check_page(page_title, last_version['sha1'])
-        if need_embedding!=Check_Page.NO_NEED:
-            chunker=Chunker(embedder)
-            chunks=chunker.get_document_chunks([Document(page_content=last_version['slots']['main']['content'])], page_title, last_version['sha1'])
-            if need_embedding==Check_Page.NEED_EMBEDDING:
-                database_connection.add_elements_to_collection(chunks)
-            else:
-                database_connection.modify_elements_of_collection(chunks, ids)
-    result=database_connection.get_all_documents()
-    st.write(result)
-
 #test to verify sha1
 def test_check_page_title_sha1(page_title):
     database_connection=Database_connector("localhost", 8000)
     database_connection.connect()
     embedder= Embedder()
     database_connection.get_or_create_collection("RAG", embedder)
-    res, ids=database_connection.check_page(page_title, "ciao")
+    res, ids=database_connection.check_page_by_title(page_title, "ciao")
     st.write(res)
     st.write(ids)
     elements=database_connection.get_all_documents()
@@ -193,21 +162,63 @@ def test_check_page_title_sha1(page_title):
     3:"e3d08ba5-0ee9-44a1-a64f-03467855d5bd"
     '''
 
+# test method to verify get pages method
 def get_pages():
+    load_dotenv()
     logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
     logger.login()
-    logger.get_page_info()
+    #logger.get_pages_in_namespace(0)
+    logger.get_pages()
 
+#----FUNCTION METHODS---
+
+#delete collection by name
 def delete_collection(name):
     database_connection=Database_connector("localhost", 8000)
     database_connection.connect()
     database_connection.delete_collection(name)
 
+def add_list_of_pages_check_sha1(page_titles, page_ids):
+    load_dotenv()
+    logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
+    logger.login()
+    database_connection=Database_connector("localhost", 8000)
+    database_connection.connect()
+    embedder= Embedder()
+    database_connection.get_or_create_collection("RAG", embedder)
+    index=0
+    for page_title in page_titles:
+        st.write("page")
+        st.write(page_title)
+        page_json=logger.complete_json_by_id(page_ids[index]) 
+        #st.write(page_json)
+        last_version=logger.get_last_version(page_json)
+        if len(last_version['slots']['main']['content'])>0:
+            st.write("page with content")
+            st.write(page_title)
+            need_embedding, ids=database_connection.check_page_by_id(page_ids[index], last_version['sha1'])
+            if need_embedding!=Check_Page.NO_NEED:
+                chunker=Chunker(embedder)
+                chunks=chunker.get_document_chunks([Document(page_content=last_version['slots']['main']['content'])], page_title, page_ids[index], last_version['sha1'])
+                if need_embedding==Check_Page.NEED_EMBEDDING:
+                    st.write("NEED_EMBEDDING")
+                    database_connection.add_elements_to_collection(chunks)
+                else:
+                    st.write("MODIFY_EMBEDDING")
+                    database_connection.modify_elements_of_collection(chunks, ids)
+            st.write(index)
+        else:
+            st.write("page with no content")
+            st.write(page_title)
+        index+=1
+    result=database_connection.get_all_documents()
+    st.write(result)
+
 #current method for UI chat
 def UI_chat():
     #localhost --> runno in locale
     #chroma --> se lo runno da dokcer compose 
-    database_connection=Database_connector("chroma", 8000)
+    database_connection=Database_connector("localhost", 8000)
     database_connection.connect()
     embedder= Embedder()
     database_connection.get_or_create_collection("RAG", embedder)
@@ -215,59 +226,19 @@ def UI_chat():
     chat=UIChat(database)
     chat.chat()
 
-def get_pages():
-    logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
-    logger.login()
-    #logger.get_pages_in_namespace(0)
-    logger.get_pages()
+#insert all the web pages
+def insert_all_pages():
+    #LE PAGINE SENZA CONTESTO VENGONO SCARTATE
+    
+    with open("Page_titles.txt", 'r') as file:
+        # Leggi tutte le righe del file e memorizzale in una lista
+        titles = file.readlines()
+    with open("Page_ids.txt", 'r') as file:
+        # Leggi tutte le righe del file e memorizzale in una lista
+        ids = file.readlines()
+    correct_titles = [line.strip() for line in titles]
+    correct_ids = [line.strip() for line in ids]
+    add_list_of_pages_check_sha1(correct_titles, correct_ids)
 
 if __name__ == '__main__':
     UI_chat()
-    #get_pages()
-    #get_complete_json()
-    #get_pages()
-    #get_pages_with_metadata("Gestionale")
-    #delete_collection("RAG")
-    #test_check_page_title_sha1("Pippo")
-    #page_titles=["Interfaccia_Essenzia_e_QualiWare"]
-    #add_list_of_pages(page_titles)
-    #
-#    page_titles=["SERVIZI_BATCH",
-#    "OFFERTE_CLIENTI",
-#    "Registri_Telematici",
-#    "E_MAIL"]
-#    add_list_of_pages(page_titles)
-#
-#    page_titles=["Gestionale","Base",
-#"Amministrazione",
-#"Accise",
-#"BPM",
-#"Conferimenti",
-#"IWine",
-#"Mobile",
-#"Progetti",
-#"Produzione",
-#"ESSENZIA_WS",
-#"Documenti_Ext",
-#"Wine",
-#"Essenzia8",
-#"Essenzia11"]
-#    add_list_of_pages(page_titles)
-#    '''
-    #add_pages_with_metadata("Gestionale")
-    #get_complete_json()
-    #get_pages()
-    #test_chat_class()
-    #add_pages("OFFERTE_CLIENTI")
-    #get_all_elements()
-    #test_get_answers_questions("Gestionale")
-    #test_chat_class()
-    #get_all_elements()
-    
-    
-    #    remove_elements()
-
-
-    #page_titles = ['Accise', 'BPM', 'Conferimenti', 'IWine', 'Mobile', 'Progetti', 'Produzione', 'ESSENZIA_WS', 'Documenti_Ext', 'Wine', 'Essenzia8', 'Essenzia11']
-    #test_get_content_page("Accise")
-    #test_chat_class()

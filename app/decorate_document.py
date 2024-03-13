@@ -6,7 +6,6 @@ from langchain_core.documents import Document
 import json
 import streamlit as st
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-
 import uuid
 
 class Document_decorator:
@@ -15,13 +14,14 @@ class Document_decorator:
         self.__embedder=embedder
         self.__llm=ChatOpenAI(model="gpt-3.5-turbo")
     
-    def add_metadata(self, sentences, type, sha1, title):
+    def add_metadata(self, sentences, type, sha1, title, id):
         for sentence in sentences:
             sentence['type']=type # web page or pdf
             new_uuid=uuid.uuid4()
             sentence['uuid']=str(new_uuid) # instead of using increment id
             sentence['sha1']=str(sha1) # used to check if the web page/pad has been changed
             sentence['title']=str(title) # used to identify the we
+            sentence['id']=str(id)
         return sentences
 
     def get_page_summary(self, document, page_title):
@@ -126,7 +126,14 @@ class Document_decorator:
             return [docs_split[i].page_content for i in range(len(docs_split))]
         else:
             return [answers_questions_document[0].page_content]
-
+    
+    def remove_index_and_simple_sentece_from_senteces(self, sentences):
+        for sentence in sentences:
+            # Remove index and sentence field in the list of dictionary
+            sentence.pop('index', None)
+            sentence.pop('sentence')
+        return sentences
+    
     '''
     non server più, adesso uso l'uuid
     def add_autoincrement_value(self, sentences, vector_amount_in_db):
@@ -135,10 +142,3 @@ class Document_decorator:
             sentence['id']=index
         return sentences
     '''
-    
-    def remove_index_and_simple_sentece_from_senteces(self, sentences):
-        for sentence in sentences:
-            # Remove index and sentence field in the list of dictionary
-            sentence.pop('index', None)
-            sentence.pop('sentence')
-        return sentences

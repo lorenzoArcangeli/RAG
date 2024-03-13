@@ -39,7 +39,55 @@ class Logger:
         assert data['login']['result'] == 'Success'
         self.__token=login_token
     
+    def complete_json_by_title(self, title):
+        token=self.__token
+        headers = {
+            'Authorization': 'Bearer <{token}}>',
+        }
 
+        #the paramters are always the same except for the page title
+        api_url = f"https://wikidoc.apra.it/essenzia/api.php?action=query&prop=revisions&titles={title}&rvslots=*&rvprop=timestamp|content|sha1&formatversion=2&format=json"
+        response = self.__session.get(api_url, headers=headers)
+        return response.json()
+    
+    def complete_json_by_id(self, id):
+        token=self.__token
+        headers = {
+            'Authorization': 'Bearer <{token}}>',
+        }
+
+        #the paramters are always the same except for the page title
+        api_url = f"https://wikidoc.apra.it/essenzia/api.php?action=query&prop=revisions&pageids={id}&rvslots=*&rvprop=timestamp|content|sha1&formatversion=2&format=json"
+        response = self.__session.get(api_url, headers=headers)
+        return response.json()
+    
+    def get_last_version(self, json):
+        versions=json['query']['pages'][0]['revisions']
+        last_version=versions[-1]
+        return last_version
+    
+    def set_new_baseurl(self, new_url):
+        self.baseurl=new_url
+
+    #11.0.00
+    def get_pages(self): 
+        token=self.__token
+        headers = {
+            'Authorization': 'Bearer <{token}}>',
+        }
+        #the paramters are always the same except for the page title
+        api_url = f"https://wikidoc.apra.it/essenzia/api.php?action=query&list=allpages&aplimit=max&format=json"
+        #api_url = f"https://wikidoc.apra.it/essenzia/api.php?action=query&list=allpages&aplimit=max&format=json&apcontinue=Versamenti_di_Produzione_/_Imbottigliamento"
+        response = self.__session.get(api_url, headers=headers)
+        result=response.json()
+        st.write(result)
+        with open("Page_titles.txt", 'a') as file:
+            # Scrivi ogni stringa nella lista su una nuova riga
+            for stringa in result['query']['allpages']:
+                file.write(f"{stringa['title']}\n")
+    
+
+    '''
     def get_content_page(self, page_title):
         if self.__token==None:
             raise Exception("Token to connect is not present")
@@ -53,26 +101,19 @@ class Logger:
             api_url = f"{self.baseurl}?action=query&prop=revisions&titles={page_title}&rvslots=*&rvprop=content&formatversion=2&format=json"
             response = self.__session.get(api_url, headers=headers)
             return response.json()
-        
-    def complete_json(self, page_title):
-        token=self.__token
-        headers = {
-            'Authorization': 'Bearer <{token}}>',
-        }
+    '''
 
-        #the paramters are always the same except for the page title
-        api_url = f"https://wikidoc.apra.it/essenzia/api.php?action=query&prop=revisions&titles={page_title}&rvslots=*&rvprop=timestamp|content|sha1&formatversion=2&format=json"
-        response = self.__session.get(api_url, headers=headers)
-        return response.json()
-    
-    def get_last_version(self, json):
-        versions=json['query']['pages'][0]['revisions']
-        last_version=versions[-1]
-        return last_version
-    
-    def set_new_baseurl(self, new_url):
-        self.baseurl=new_url
-
+    '''
+    def remove_last_char(self):
+        with open("Page_titles.txt", 'r') as file:
+            # Leggi tutte le righe del file e memorizzale in una lista
+            lines = file.readlines()
+        nuove_stringhe = [line.strip() for line in lines]
+        with open("Page_titles.txt", 'w') as file:
+            # Scrivi ogni stringa nella lista su una nuova riga
+            for stringa in nuove_stringhe:
+                file.write(f"{stringa}")
+    '''
     '''
     #PROVA
     def get_pages_in_namespace(self, namespace):
