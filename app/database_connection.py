@@ -81,8 +81,10 @@ class Database_connector:
 
         for chunk in chunks:
             # extract fields
-            combined_sentences_list.append(chunk['combined_sentence'])
-            combined_sentence_embeddings_list.append(chunk['combined_sentence_embedding'])
+            #combined_sentences_list.append(chunk['combined_sentence'])
+            #combined_sentence_embeddings_list.append(chunk['combined_sentence_embedding'])
+            combined_sentences_list.append(chunk['section'])
+            combined_sentence_embeddings_list.append(chunk['embedding'])
             ids_list.append(str(chunk['uuid']))
         return combined_sentences_list, combined_sentence_embeddings_list, ids_list
 

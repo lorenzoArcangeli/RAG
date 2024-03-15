@@ -21,4 +21,8 @@ class Embedder:
     def embed_query(self, query):
         return self.__oaiembeds.embed_documents([query])
     
+    def do_embedding_sections(self, sections):
+        embeddings = self.__oaiembeds.embed_documents([section['section'] for section in sections])
+        return embeddings
+    
     

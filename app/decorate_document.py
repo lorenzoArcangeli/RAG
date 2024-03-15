@@ -54,14 +54,15 @@ class Document_decorator:
         new_chunk_summary = runnable.invoke({
                 "proposition": document
         }).content
+        
         summary_header="Quest è il riassunto generale della pagina web relativa a: "+page_title+"\n\n"
         final_summary=summary_header+new_chunk_summary
         summary = {}  # Initialize the summary dictionary
-        summary['sentence']=final_summary
-        summary['index']=-1 # identify summary
-        summary['combined_sentence']=final_summary
+        summary['section']=final_summary
+        #summary['index']=-1 # identify summary
+        #summary['combined_sentence']=final_summary
         summary_embedding=self.__embedder.do_embedding([summary])
-        summary['combined_sentence_embedding']=summary_embedding
+        summary['embedding']=summary_embedding
         return summary
 
     def get_page_keyword(self, document):
@@ -105,10 +106,10 @@ class Document_decorator:
             questions_answers_splitted=self.__split_question_anwer([Document(page_content=question_answers)])
             questions_answers_splitted_list_dict=[]
             for qas in questions_answers_splitted:
-                qasd={'combined_sentence': qas}
-                qasd={'sentence': qas}
+                #qasd={'combined_sentence': qas}
+                qasd={'section': qas}
                 qasd_emb=self.__embedder.do_embedding([qas])
-                qasd['combined_sentence_embedding']=qasd_emb
+                qasd['embedding']=qasd_emb
                 questions_answers_splitted_list_dict.append(qasd)
             questions_answars.extend(questions_answers_splitted_list_dict)
             st.write(questions_answars)

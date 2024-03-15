@@ -10,7 +10,7 @@ from langchain.chains.question_answering import load_qa_chain
 
 class UIChat:
 
-    def __init__(self, database):
+    def __init__(self, retriever):
         #is used to store question/answers to display
         if "history" not in st.session_state:
             st.session_state['history'] = []
@@ -19,40 +19,27 @@ class UIChat:
         if "chat_history" not in st.session_state:
             st.session_state['chat_history'] = []
         
-        self.__chain = self.__get_conversational_chain(database)
+        self.__chain = self.__get_conversational_chain(retriever)
         
-    def __get_conversational_chain(self, database):
-        '''
-        st.session_state.conversation=database
-        template = """
-        Sei l'assistente virtuale di un azienda inforamtica. Prendendo in considerazione il contesto fornito e la chat history devi rispondere
-        alla domanda dell'utente. Se non hai la risposta non inventarti niente. Rispondi dicendo che non sai la risposta ma cerca di dare un
-        riassunto del contesto preso in input.
-        
-        CONTEXT:
+    def __get_conversational_chain(self, retriever):
+        prompt_template = """You are the virtual assistan of an IT company called APRA. Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
+
         {context}
-        
-        QUESTION: 
-        {query}
 
-        CHAT HISTORY: 
-        {chat_history}
-        
-        ANSWER:
-        """
+        Question: {question}
+        Helpful Answer:"""
+        prompt = PromptTemplate(
+            template=prompt_template, input_variables=["context", "question"]
+        )
 
-        prompt = PromptTemplate(input_variables=["chat_history", "query", "context"], template=template)
-        memory = ConversationBufferMemory(memory_key="chat_history", input_key="query")
-
-        chain = RetrievalQA.from_chain_type(ChatOpenAI(model="gpt-3.5-turbo", temperature=0), chain_type="stuff", memory=memory, prompt=prompt)
-        '''
         llm = ChatOpenAI(model="gpt-3.5-turbo")
         conversation_chain = ConversationalRetrievalChain.from_llm(
             llm=llm,
-            retriever=database.as_retriever(search_kwargs={"k": 5}),
+            #retriever=database.as_retriever(search_kwargs={"k": 5}),
+            retriever=retriever,
+            combine_docs_chain_kwargs={"prompt":prompt}
         )
         return conversation_chain
-        #return chain
 
     def __conversational_chat(self, query, chain):
         result = chain({"question": query, "chat_history": st.session_state['chat_history']})

@@ -87,6 +87,24 @@ class Logger:
                 file.write(f"{stringa['title']}\n")
     
 
+    #LINK PER ESTRARRE I NOMI DI TUTTE LE IMMAGINI
+    #https://wikidoc.apra.it/essenzia/api.php?action=query&list=allimages&ailimit=max&format=json
+    #https://wikidoc.apra.it/essenzia/api.php?action=query&list=allimages&ailimit=max&format=json&aicontinue=447.png
+    #https://wikidoc.apra.it/essenzia/api.php?action=query&list=allimages&ailimit=max&format=json&aicontinue=Acconti_003.png
+    #https://wikidoc.apra.it/essenzia/api.php?action=query&list=allimages&ailimit=max&format=json&aicontinue=Bil_65.JPG
+    #https://wikidoc.apra.it/essenzia/api.php?action=query&list=allimages&ailimit=max&format=json&aicontinue=Carichi-Ins-Multiplo.png
+    #https://wikidoc.apra.it/essenzia/api.php?action=query&list=allimages&ailimit=max&format=json&aicontinue=Consultazione_commessa.png
+    #https://wikidoc.apra.it/essenzia/api.php?action=query&list=allimages&ailimit=max&format=json&aicontinue=Documento_carico.png
+    #https://wikidoc.apra.it/essenzia/api.php?action=query&list=allimages&ailimit=max&format=json&aicontinue=Estratto_033.png
+    #https://wikidoc.apra.it/essenzia/api.php?action=query&list=allimages&ailimit=max&format=json&aicontinue=GiorniChiusuraCFf.png
+    #https://wikidoc.apra.it/essenzia/api.php?action=query&list=allimages&ailimit=max&format=json&aicontinue=Imageufukfkf.png
+    #https://wikidoc.apra.it/essenzia/api.php?action=query&list=allimages&ailimit=max&format=json&aicontinue=Listini_standard.png
+    #https://wikidoc.apra.it/essenzia/api.php?action=query&list=allimages&ailimit=max&format=json&aicontinue=OPA-DISTINTA-FANTASMA.png
+    #https://wikidoc.apra.it/essenzia/api.php?action=query&list=allimages&ailimit=max&format=json&aicontinue=Percorso_voci_di_costi.png
+    #https://wikidoc.apra.it/essenzia/api.php?action=query&list=allimages&ailimit=max&format=json&aicontinue=RA_065.png
+    #https://wikidoc.apra.it/essenzia/api.php?action=query&list=allimages&ailimit=max&format=json&aicontinue=Righe.png
+    #https://wikidoc.apra.it/essenzia/api.php?action=query&list=allimages&ailimit=max&format=json&aicontinue=Significato_pulsanti_Saiku.png
+    #https://wikidoc.apra.it/essenzia/api.php?action=query&list=allimages&ailimit=max&format=json&aicontinue=VAR-NEW.png
     '''
     def get_content_page(self, page_title):
         if self.__token==None:

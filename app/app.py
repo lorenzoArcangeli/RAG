@@ -5,9 +5,12 @@ from dotenv import load_dotenv
 from logger import Logger
 import os
 import streamlit as st
-from chunker import Chunker
+import sys
+from chunker_to_delete import Chunker
 from langchain_core.documents import Document
 from UI_chat import UIChat
+from Not_LITM import Not_LITM_retriever
+from sectionChunker import sectionChunker
 
 #----TEST METHODS---
 
@@ -222,9 +225,29 @@ def UI_chat():
     database_connection.connect()
     embedder= Embedder()
     database_connection.get_or_create_collection("RAG", embedder)
-    database=database_connection.get_db()
-    chat=UIChat(database)
+    #database=database_connection.get_db()
+    not_lost_in_the_middle_retriever=Not_LITM_retriever(database_connection=database_connection)
+    chat=UIChat(not_lost_in_the_middle_retriever)
     chat.chat()
+
+def test_section_chunker():
+    load_dotenv()
+    logger=Logger(os.getenv("USERNAME_APRA"), os.getenv("PASSWORD"), "https://wikidoc.apra.it/essenzia/api.php")
+    logger.login()
+    page_json=logger.complete_json_by_id(6708) 
+    last_version=logger.get_last_version(page_json)
+    embedder= Embedder()
+    database_connection=Database_connector("localhost", 8000)
+    database_connection.connect()
+    database_connection.get_or_create_collection("RAG", embedder)
+    chunker=sectionChunker(embedder)
+    chunks=chunker.get_document_chunks(last_version['slots']['main']['content'], "Varianti Errate", 6708, last_version['sha1'])
+    st.write(chunks)
+    need_embedding, ids=database_connection.check_page_by_id(6708, last_version['sha1'])
+    st.write(need_embedding)
+    st.write(ids)
+
+
 
 #insert all the web pages
 def insert_all_pages():
@@ -241,4 +264,5 @@ def insert_all_pages():
     add_list_of_pages_check_sha1(correct_titles, correct_ids)
 
 if __name__ == '__main__':
-    UI_chat()
+    #UI_chat()
+    test_section_chunker()

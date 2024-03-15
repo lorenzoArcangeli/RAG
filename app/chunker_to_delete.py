@@ -15,6 +15,42 @@ class Chunker:
         self.keyword=None
         self.sha1=None
             
+
+    def test_similar_document(self, document):
+        sentences=self.__create_document_chunks(document)
+        if len(sentences)<=1:
+            sentences[0]['combined_sentence']=sentences[0]['sentence']
+            document_chunks=sentences
+        else: 
+            distances, sentences = self.__calculate_cosine_distances(sentences)
+            indexes_above_treshold_distance=self.__identify_indexes_above_treshold_distance(distances)
+            document_chunks=self.__group_chunks_without_len_control(indexes_above_treshold_distance, sentences)
+        return document_chunks
+
+        
+
+    def __group_chunks_without_len_control(self, indices, sentences):
+        # initialize the start index
+        start_index = 0
+        # create a list to hold the grouped sentences
+        chunks = []
+        # iterate through the breakpoints to slice the sentences
+        for index in indices:
+            # the end index is the current breakpoint
+            end_index = index
+            # slice the sentence_dicts from the current start index to the end index
+            group = sentences[start_index:end_index + 1]
+            combined_text = ' '.join([repr(d['sentence']) for d in group])
+            #chunks.extend(self.__check_len([Document(page_content=combined_text)]))
+            chunks.append(combined_text)
+            start_index = index + 1
+        # the last group, if any sentences remain
+        if start_index < len(sentences):
+            combined_text = ' '.join([repr(d['sentence']) for d in sentences[start_index:]])
+            #chunks.extend(self.__check_len([Document(page_content=combined_text)]))
+            chunks.append(combined_text)
+        return chunks
+        
     def get_document_chunks(self, document, page_title, page_id, sha1):
         self.sha1=sha1
         # get_page_keyword --> used to add page keyword
@@ -110,6 +146,7 @@ class Chunker:
         # The indices of those breakpoints on the list
         indices_above_thresh = [i for i, x in enumerate(distances) if x > breakpoint_distance_threshold]
         return indices_above_thresh
+    
 
     def __group_chunks(self, indices, sentences):
         # initialize the start index
